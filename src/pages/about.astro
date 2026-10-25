@@ -1,0 +1,44 @@
+---
+import Base from '../layouts/Base.astro';
+import ImageSlot from '../components/ImageSlot.astro';
+---
+
+<Base title="About">
+  <section class="page">
+    <div class="eyebrow" data-reveal>About</div>
+    <h1 class="page-title title">
+      <span class="mask"><span data-line data-hero-reveal>Fifteen years,</span></span>
+      <span class="mask"><span data-line data-hero-reveal class="it" style="transition-delay: .14s">one street.</span></span>
+    </h1>
+    <div class="grid">
+      <div class="media" data-reveal>
+        <ImageSlot id="bms-about" hint="Showroom interior or founders on the floor" />
+      </div>
+      <div class="copy">
+        <p class="lead" data-reveal>
+          BMS Carz began in 2011 as a two-bay workshop that kept being asked the same question: which of these is actually worth buying?
+        </p>
+        <p class="body" data-reveal>
+          So we started buying cars ourselves. The floor stays deliberately small — twenty-odd cars at a time, each one we'd put our own family in. If a unit doesn't clear inspection it goes to auction, not to you.
+        </p>
+        <div class="stats" data-reveal>
+          <div><div class="stat__n">3,400+</div><div class="stat__k">Delivered</div></div>
+          <div><div class="stat__n">4.9</div><div class="stat__k">Rating</div></div>
+          <div><div class="stat__n">21</div><div class="stat__k">People</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .title { max-width: 14ch; text-wrap: balance; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr)); gap: clamp(48px, 7vw, 110px); margin-top: 90px; align-items: start; }
+  .media { position: relative; aspect-ratio: 4 / 5; background: var(--surface); overflow: hidden; }
+  .copy { padding-top: 20px; }
+  .lead { margin: 0; font-family: var(--serif); font-weight: 300; font-size: clamp(26px, 2.4vw, 34px); line-height: 1.38; text-wrap: pretty; }
+  .body { margin: 32px 0 0; font-size: 15px; font-weight: 300; line-height: 1.85; color: rgba(236,232,225,.64); text-wrap: pretty; }
+  .stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; margin-top: 64px; padding-top: 36px; border-top: 1px solid var(--line); }
+  .stats .stat__n { font-size: clamp(34px, 4vw, 44px); }
+  .stats .stat__k { letter-spacing: .28em; }
+</style>

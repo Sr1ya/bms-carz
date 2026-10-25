@@ -1,0 +1,121 @@
+---
+import Base from '../../layouts/Base.astro';
+import CarCard from '../../components/CarCard.astro';
+import ImageSlot from '../../components/ImageSlot.astro';
+import { CARS, SCORES, type Car, money, emi, carName } from '../../data/cars';
+
+export function getStaticPaths() {
+  return CARS.map((car) => ({ params: { id: car.id }, props: { car } }));
+}
+
+const { car } = Astro.props as { car: Car };
+const related = CARS.filter((c) => c.id !== car.id && c.cat === car.cat).slice(0, 3);
+---
+
+<Base title={carName(car)} description={car.blurb}>
+  <section class="detail">
+    <div class="hero">
+      <div class="hero__media" data-hero-media data-hero-reveal>
+        <ImageSlot id={`car-${car.id}`} hint={`${carName(car)} — wide hero`} alt={carName(car)} eager />
+      </div>
+      <div class="hero__grad"></div>
+      <div class="hero__copy">
+        <div>
+          <a href="/collection/" class="back">← The collection</a>
+          <div class="eyebrow hero__eyebrow">{car.year} · {car.make}</div>
+          <h1 class="hero__title">
+            <span class="mask"><span data-line data-hero-reveal>{car.model}</span></span>
+          </h1>
+        </div>
+        <div class="hero__price">
+          <div class="hero__amount">{money(car)}</div>
+          <div class="hero__emi">Finance from {emi(car)} / month</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="body">
+      <div class="body__grid">
+        <div>
+          <p class="blurb" data-reveal>{car.blurb}</p>
+          <dl class="specs" data-reveal>
+            {car.specs.map(([k, v]) => (
+              <div class="spec">
+                <dt class="label">{k}</dt>
+                <dd>{v}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+        <div data-reveal>
+          <aside class="panel">
+            <div class="eyebrow">Inspection</div>
+            <div class="scores">
+              {SCORES.map(([k, v]) => (
+                <div>
+                  <div class="score__row"><span>{k}</span><span class="score__val">{v} / 100</span></div>
+                  <div class="score__track"><div class="score__bar" style={`width: ${v}%`}></div></div>
+                </div>
+              ))}
+            </div>
+            <a href={`/contact/?car=${car.id}`} class="btn btn--solid panel__btn">Book a test drive</a>
+            <a href="tel:+919876543210" class="btn btn--line panel__btn panel__btn--alt">Call the showroom</a>
+          </aside>
+        </div>
+      </div>
+
+      {related.length > 0 && (
+        <div class="related">
+          <div class="related__head" data-reveal>
+            <h2 class="related__title">You may also consider</h2>
+            <a href="/collection/" class="related__all">View all</a>
+          </div>
+          <div class="related__grid">
+            {related.map((c, i) => <CarCard car={c} index={i} variant="related" />)}
+          </div>
+        </div>
+      )}
+    </div>
+  </section>
+</Base>
+
+<style>
+  .detail { padding-bottom: 140px; }
+  .hero { position: relative; height: 82vh; min-height: 520px; overflow: hidden; background: var(--surface); }
+  .hero__media { position: absolute; inset: 0; }
+  .hero__grad { position: absolute; inset: 0; pointer-events: none; background: linear-gradient(180deg, rgba(7,7,7,.6), rgba(7,7,7,0) 35%, rgba(7,7,7,.2) 60%, #070707); }
+  .hero__copy { position: absolute; left: 0; right: 0; bottom: 0; padding: 0 var(--gutter) 48px; display: flex; align-items: flex-end; justify-content: space-between; gap: 32px; flex-wrap: wrap; }
+  .back { display: inline-block; margin-bottom: 26px; font-size: 10px; font-weight: 500; letter-spacing: .3em; text-transform: uppercase; color: rgba(236,232,225,.6); transition: color .4s; }
+  .back:hover { color: var(--ink); }
+  .hero__eyebrow { letter-spacing: .34em; }
+  .hero__title { margin: 14px 0 0; font-family: var(--serif); font-weight: 300; font-size: clamp(48px, 7vw, 116px); line-height: .92; }
+  .hero__price { text-align: right; }
+  .hero__amount { font-family: var(--serif); font-weight: 400; font-size: clamp(34px, 3.6vw, 52px); }
+  .hero__emi { margin-top: 6px; font-size: 11px; letter-spacing: .14em; color: rgba(236,232,225,.55); }
+  @media (max-width: 600px) { .hero__price { text-align: left; } }
+
+  .body { padding: 0 var(--gutter); }
+  .body__grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr)); gap: clamp(48px, 7vw, 110px); margin-top: 80px; }
+  .blurb { margin: 0; font-family: var(--serif); font-weight: 300; font-size: clamp(24px, 2.2vw, 32px); line-height: 1.4; text-wrap: pretty; }
+  .specs { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0 36px; margin: 56px 0 0; }
+  .spec { padding: 20px 0; border-top: 1px solid var(--line); }
+  .spec .label { letter-spacing: .28em; }
+  .spec dd { margin: 10px 0 0; font-size: 16px; font-weight: 300; }
+
+  .panel { position: sticky; top: 120px; padding: 40px; border: 1px solid rgba(236,232,225,.12); background: #0b0b0b; }
+  .panel .eyebrow { letter-spacing: .34em; }
+  .scores { display: grid; gap: 24px; margin-top: 30px; }
+  .score__row { display: flex; justify-content: space-between; font-size: 13px; font-weight: 300; color: rgba(236,232,225,.78); }
+  .score__val { color: rgba(236,232,225,.5); }
+  .score__track { height: 1px; background: rgba(236,232,225,.12); margin-top: 12px; }
+  .score__bar { height: 1px; background: var(--accent); }
+  .panel__btn { display: block; margin-top: 40px; padding: 18px; }
+  .panel__btn--alt { margin-top: 12px; border-color: rgba(236,232,225,.24); }
+  @media (max-width: 600px) { .panel { padding: 28px 22px; } }
+
+  .related { margin-top: 140px; }
+  .related__head { display: flex; align-items: baseline; justify-content: space-between; gap: 24px; padding-bottom: 24px; border-bottom: 1px solid var(--line); }
+  .related__title { margin: 0; font-family: var(--serif); font-weight: 300; font-size: 40px; }
+  .related__all { font-size: 11px; font-weight: 500; letter-spacing: .24em; text-transform: uppercase; color: rgba(236,232,225,.65); white-space: nowrap; }
+  .related__grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr)); gap: clamp(20px, 2.4vw, 36px); margin-top: 40px; }
+</style>

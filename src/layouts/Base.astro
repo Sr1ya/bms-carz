@@ -1,0 +1,121 @@
+---
+import '../styles/global.css';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import Loader from '../components/Loader.astro';
+
+interface Props {
+  title?: string;
+  description?: string;
+  overlayHeader?: boolean;
+}
+
+const {
+  title,
+  description = 'A private collection of luxury and performance cars in Bengaluru — each inspected, verified and priced in the open.',
+  overlayHeader = false,
+} = Astro.props;
+const fullTitle = title ? `${title} — BMS Carz` : 'BMS Carz — Pre-Owned Luxury';
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#070707" />
+    <link rel="icon" type="image/svg+xml" href="/images/bms-carz-logo-white.svg" />
+    <script is:inline>
+      // Intro plays on arrival and on reload, not when clicking between pages or going back.
+      // Decided before first paint so the page never flashes.
+      try {
+        var nav = performance.getEntriesByType('navigation')[0];
+        var type = nav ? nav.type : 'navigate';
+        var internal = !!document.referrer && new URL(document.referrer).origin === location.origin;
+        if (type === 'reload' || (type === 'navigate' && !internal)) document.documentElement.classList.add('is-loading');
+      } catch (e) {}
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Manrope:wght@300;400;500;600&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <Loader />
+    <Header overlay={overlayHeader} />
+    <main>
+      <slot />
+    </main>
+    <Footer />
+
+    <script>
+      // Motion is opt-in: only hide content if transitions are verified to actually run.
+      const root = document.documentElement;
+      root.classList.add('om-motion');
+      let verified = false;
+      const probe = document.createElement('div');
+      probe.style.cssText = 'position:fixed;left:-10px;top:0;width:1px;height:1px;opacity:0;transition:opacity 80ms linear;pointer-events:none';
+      document.body.appendChild(probe);
+      requestAnimationFrame(() => {
+        probe.getBoundingClientRect();
+        probe.style.opacity = '1';
+        setTimeout(() => {
+          verified = parseFloat(getComputedStyle(probe).opacity) > 0.9;
+          probe.remove();
+          if (!verified) root.classList.remove('om-motion');
+        }, 450);
+      });
+      setTimeout(() => { if (!verified) root.classList.remove('om-motion'); }, 1600);
+
+      const io = new IntersectionObserver(
+        (entries) => entries.forEach((e) => {
+          if (e.isIntersecting) { e.target.classList.add('om-in'); io.unobserve(e.target); }
+        }),
+        { threshold: 0.1, rootMargin: '0px 0px -6% 0px' },
+      );
+
+      const scan = () => {
+        const h = window.innerHeight;
+        document.querySelectorAll('[data-reveal]:not(.om-in)').forEach((n) => {
+          if (n.hasAttribute('data-hero-reveal')) return;
+          const r = n.getBoundingClientRect();
+          if (r.top < h * 0.92 && r.bottom > 0) n.classList.add('om-in');
+          else io.observe(n);
+        });
+      };
+
+      const enter = () => requestAnimationFrame(() => setTimeout(() => {
+        document.querySelectorAll('[data-hero-reveal]:not(.om-in), [data-hero-media]:not(.om-in)')
+          .forEach((n) => n.classList.add('om-in'));
+        scan();
+      }, 120));
+
+      if (root.classList.contains('is-loading')) {
+        // Start the logo only once the page has settled (load is busy work that drops frames),
+        // let it finish (shine clears the letters ~4.1s), then slide the curtain up while the hero enters.
+        const loader = document.getElementById('loader')!;
+        const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const loaded = new Promise((r) => (document.readyState === 'complete' ? r(0) : window.addEventListener('load', r, { once: true })));
+        const cap = new Promise((r) => setTimeout(r, 1500));
+        Promise.race([loaded, cap]).then(() => requestAnimationFrame(() => requestAnimationFrame(() => {
+          loader.classList.add('is-playing');
+          setTimeout(() => {
+            loader.classList.add('is-done');
+            root.classList.remove('is-loading');
+            window.dispatchEvent(new Event('bms:intro-done'));
+            enter();
+          }, reduce ? 900 : 4100);
+        })));
+      } else {
+        enter();
+      }
+
+      // Let pages that re-order content (collection filters) ask for a re-scan.
+      window.addEventListener('bms:rescan', scan);
+    </script>
+  </body>
+</html>

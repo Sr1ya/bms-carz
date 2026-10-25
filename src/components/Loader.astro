@@ -1,0 +1,125 @@
+---
+// Intro loader, generated at build time from public/images/bms-carz-logo-dark.svg.
+// Markup and CSS mirror bms-carz-animated.html exactly — a single inline SVG with
+// the same structure — because that is what renders smoothly; extra layering,
+// masks or containment made it slower, not faster.
+// Base.astro decides whether it runs (arrival and reload, not internal navigation).
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
+const src = readFileSync(join(process.cwd(), 'public', 'images', 'bms-carz-logo-dark.svg'), 'utf8');
+
+const group = (id: string) => {
+  const m = src.match(new RegExp(`<g id="${id}"([^>]*)>([\\s\\S]*?)</g>\\s*(?=<g id=|</svg>)`));
+  if (!m) throw new Error(`Logo SVG is missing <g id="${id}">`);
+  return { attrs: m[1], body: m[2] };
+};
+const attr = (s: string, name: string) => s.match(new RegExp(`\\s${name}="([^"]*)"`))?.[1];
+const paths = (s: string) => [...s.matchAll(/<path([^>]*)\/>/g)].map((m) => ({ d: attr(m[1], 'd')!, fill: attr(m[1], 'fill') }));
+
+const viewBox = attr(src.match(/<svg[^>]*>/)![0], 'viewBox');
+
+// Car: split the silhouette into its subpaths so each piece draws on in turn.
+const car = group('car');
+const carPieces = paths(car.body)[0].d.split(/(?=M)/).map((d) => d.trim()).filter(Boolean);
+const wheels = [...car.body.matchAll(/<circle([^>]*)\/>/g)].map((m) => ({
+  cx: attr(m[1], 'cx'), cy: attr(m[1], 'cy'), r: attr(m[1], 'r'),
+}));
+
+const stripes = paths(group('stripes').body);
+
+const bms = group('bms');
+const bmsTransform = attr(bms.attrs, 'transform');
+const bmsPaths = paths(bms.body).map((p) => p.d);
+
+const carzPaths = paths(group('carz').body).map((p) => p.d);
+---
+
+<div class="loader" id="loader" aria-hidden="true">
+  <div class="loader__logo">
+    <svg class="bms-logo" viewBox={viewBox} role="img" aria-label="BMS Carz">
+      <defs>
+        <linearGradient id="shineGrad" x1="0" x2="1">
+          <stop offset="0" stop-color="#fff" stop-opacity="0" /><stop offset=".5" stop-color="#fff" stop-opacity=".55" /><stop offset="1" stop-color="#fff" stop-opacity="0" />
+        </linearGradient>
+        <clipPath id="bmsClip"><g transform={bmsTransform}>{bmsPaths.map((d) => <path d={d} />)}</g></clipPath>
+      </defs>
+      <g id="car">
+        {carPieces.map((d, i) => (
+          <path class="draw car-piece" pathLength="1" style={`--d:${(i * 0.05).toFixed(2)}s`} d={d} />
+        ))}
+        {wheels.map((w, i) => (
+          <circle class="wheel" pathLength="1" style={`--d:${0.35 + i * 0.15}s`} cx={w.cx} cy={w.cy} r={w.r} />
+        ))}
+      </g>
+      {stripes.map((s, i) => (
+        <path class="stripe" style={`--d:${(1.45 + i * 0.1).toFixed(2)}s`} fill={s.fill} d={s.d} />
+      ))}
+      <defs><clipPath id="emerge"><polygon points="451,300 1500,300 1500,700 323,700" /></clipPath></defs>
+      <g clip-path="url(#emerge)">
+        {bmsPaths.map((d) => (
+          <g class="ltr" style="--d:2s;--x:-1000px"><g fill-rule="evenodd" transform={bmsTransform}><path d={d} /></g></g>
+        ))}
+        <g clip-path="url(#bmsClip)"><rect class="shine" x="250" y="380" width="260" height="300" fill="url(#shineGrad)" transform="skewX(-18)" /></g>
+      </g>
+      <g fill="none" stroke="var(--fg)" stroke-width="40" stroke-linecap="round" stroke-linejoin="round">
+        {carzPaths.map((d, i) => (
+          <path class="letter" style={`--d:${(2.7 + i * 0.12).toFixed(2)}s`} d={d} />
+        ))}
+      </g>
+    </svg>
+  </div>
+</div>
+
+<style is:global>
+  .loader {
+    position: fixed; inset: 0; z-index: 100; display: none; place-items: center; background: var(--bg);
+  }
+  .is-loading .loader, .loader.is-done { display: grid; }
+  .is-loading body { overflow: hidden; }
+  /* Nothing else paints while the logo draws. */
+  .is-loading body > :not(.loader) { visibility: hidden; }
+  .loader:not(.is-playing) .bms-logo * { animation-play-state: paused !important; }
+  /* Scales with the screen: ~56% of width on phones, capped at 520px on desktop,
+     and limited by height so it stays modest on landscape phones. */
+  .loader__logo { width: clamp(180px, 56vw, 520px); max-width: 90svh; }
+
+  /* Exit: logo slides up and out, then the curtain slides up to reveal the page. */
+  .loader.is-done {
+    transform: translateY(-100%); visibility: hidden;
+    transition: transform .95s cubic-bezier(.76, 0, .24, 1) .08s, visibility 0s linear 1.1s;
+  }
+  .loader.is-done .loader__logo {
+    transform: translateY(-90px); opacity: 0;
+    transition: transform .7s cubic-bezier(.76, 0, .24, 1), opacity .45s ease;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .loader.is-done { transition: opacity .5s ease, visibility 0s linear .5s; transform: none; opacity: 0; }
+    .loader.is-done .loader__logo { transform: none; }
+  }
+
+  /* ===== logo animation (verbatim from bms-carz-animated.html, --fg set to the site ink) ===== */
+  .bms-logo{width:100%;height:auto;display:block;overflow:visible;--fg:#ece8e1}
+  .bms-logo .draw{fill:var(--fg);fill-opacity:0;stroke:var(--fg);stroke-width:3;
+     stroke-dasharray:1;stroke-dashoffset:1;
+     animation:draw 1.3s cubic-bezier(.65,0,.35,1) var(--d,0s) forwards, fillin .5s ease-out calc(var(--d,0s) + 1.05s) forwards}
+  .bms-logo .wheel{fill:none;stroke:var(--fg);stroke-width:34;stroke-dasharray:1;stroke-dashoffset:1;
+     transform-box:fill-box;transform-origin:center;
+     animation:wheel 1.1s cubic-bezier(.3,.7,.2,1) var(--d) forwards}
+  .bms-logo .stripe{opacity:0;transform:translateX(-60px);animation:stripe .5s cubic-bezier(.2,.8,.2,1) var(--d) forwards}
+  .bms-logo .ltr{fill:var(--fg);transform:translateX(var(--x));
+     animation:emerge .9s cubic-bezier(.16,.9,.25,1) var(--d) forwards}
+  @keyframes emerge{0%{transform:translateX(var(--x)) scaleX(1.25)}100%{transform:none}}
+  .bms-logo .letter{opacity:0;transform:translateY(30px);animation:up .5s cubic-bezier(.2,.8,.2,1) var(--d) forwards}
+  .bms-logo .shine{opacity:0;animation:shine 1.1s ease-in-out 3.4s forwards}
+  @keyframes draw{to{stroke-dashoffset:0}}
+  @keyframes fillin{to{fill-opacity:1;stroke-width:0}}
+  @keyframes wheel{from{stroke-dashoffset:1;transform:rotate(-200deg)}to{stroke-dashoffset:0;transform:rotate(0)}}
+  @keyframes stripe{to{opacity:1;transform:none}}
+  @keyframes up{to{opacity:1;transform:none}}
+  @keyframes shine{0%{opacity:1;transform:translateX(-500px)}100%{opacity:1;transform:translateX(1700px)}}
+  @media (prefers-reduced-motion:reduce){
+    .bms-logo *{animation:none!important;opacity:1!important;transform:none!important;stroke-dashoffset:0!important;fill-opacity:1!important}
+    .bms-logo .draw{stroke-width:0} .bms-logo .ltr{fill:var(--fg)} .bms-logo .shine{display:none}
+  }
+</style>

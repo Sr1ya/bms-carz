@@ -1,0 +1,17 @@
+---
+// Inlines public/images/bms-carz-logo-dark.svg. Its #111111 ink is swapped for
+// currentColor so the mark reads on the dark site; the stripes keep their colours.
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
+interface Props {
+  class?: string;
+}
+
+const svg = readFileSync(join(process.cwd(), 'public', 'images', 'bms-carz-logo-dark.svg'), 'utf8')
+  .replace(/#111111/gi, 'currentColor')
+  .replace(/\s(width|height)="[^"]*"/g, '')
+  .replace('<svg ', `<svg class="${Astro.props.class ?? ''}" role="img" aria-label="BMS Carz" focusable="false" `);
+---
+
+<Fragment set:html={svg} />

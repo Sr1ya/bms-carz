@@ -1,0 +1,39 @@
+---
+// Image or labelled placeholder. Drop a file named `<id>.(jpg|webp|png|avif)`
+// into public/images/ and it replaces the placeholder at build time.
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
+
+interface Props {
+  id: string;
+  hint: string;
+  alt?: string;
+  eager?: boolean;
+}
+
+const { id, hint, alt = hint, eager = false } = Astro.props;
+const ext = ['jpg', 'jpeg', 'webp', 'png', 'avif'].find((e) =>
+  existsSync(join(process.cwd(), 'public', 'images', `${id}.${e}`)),
+);
+const src = ext ? `/images/${id}.${ext}` : null;
+---
+
+{src ? (
+  <img class="slot" src={src} alt={alt} loading={eager ? 'eager' : 'lazy'} decoding="async" />
+) : (
+  <div class="slot slot--empty" role="img" aria-label={alt}>
+    <span>{hint}</span>
+  </div>
+)}
+
+<style>
+  .slot { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+  .slot--empty {
+    display: grid; place-items: center; padding: 24px; text-align: center;
+    background: radial-gradient(120% 90% at 50% 40%, #17171a 0%, #0e0e0f 60%, #0a0a0b 100%);
+  }
+  .slot--empty span {
+    max-width: 28ch; font-size: 10px; font-weight: 500; letter-spacing: .28em; text-transform: uppercase;
+    line-height: 1.8; color: rgba(236, 232, 225, .28);
+  }
+</style>

@@ -1,0 +1,62 @@
+---
+import ImageSlot from './ImageSlot.astro';
+import { type Car, money, carName, lakhs } from '../data/cars';
+
+interface Props {
+  car: Car;
+  index: number;
+  variant?: 'featured' | 'grid' | 'related';
+}
+
+const { car, index, variant = 'grid' } = Astro.props;
+const delay = `${((index % 3) * 0.12).toFixed(2)}s`;
+---
+
+<a
+  href={`/cars/${car.id}/`}
+  class:list={['card', `card--${variant}`]}
+  style={`transition-delay: ${delay}`}
+  data-reveal
+  data-cat={car.cat}
+  data-price={lakhs(car)}
+  data-order={index}
+>
+  <div class="card__media">
+    <div class="zoom">
+      <ImageSlot id={`car-${car.id}`} hint={carName(car)} />
+    </div>
+  </div>
+  {variant === 'related' ? (
+    <div class="card__row card__row--related">
+      <div class="card__model--related">{car.model}</div>
+      <div class="price">{money(car)}</div>
+    </div>
+  ) : (
+    <>
+      <div class="card__row">
+        <div class="meta">{car.year} · {car.make}</div>
+        <div class="price">{money(car)}</div>
+      </div>
+      <h3 class="card__model">{car.model}</h3>
+      <div class="card__specs">{car.kms} · {car.fuel} · {car.gearbox}</div>
+    </>
+  )}
+</a>
+
+<style>
+  .card { display: block; color: inherit; }
+  .card:hover { color: inherit; }
+  .card[hidden] { display: none; }
+  .card__media { position: relative; overflow: hidden; background: var(--surface); aspect-ratio: 4 / 3; }
+  .card--featured .card__media { aspect-ratio: 4 / 5; }
+  .card--related .card__media { aspect-ratio: 16 / 10; }
+  .card__row { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; margin-top: 22px; }
+  .card__row--related { gap: 12px; margin-top: 18px; }
+  .meta { font-size: 10px; font-weight: 500; letter-spacing: .3em; text-transform: uppercase; color: rgba(236, 232, 225, .5); }
+  .price { font-size: 13px; letter-spacing: .04em; color: var(--accent); white-space: nowrap; }
+  .card__model { margin: 10px 0 0; font-family: var(--serif); font-weight: 400; font-size: 28px; letter-spacing: -.005em; }
+  .card--featured .card__model { font-size: 30px; }
+  .card__model--related { font-family: var(--serif); font-size: 24px; }
+  .card__specs { margin-top: 10px; font-size: 12px; font-weight: 300; letter-spacing: .06em; color: rgba(236, 232, 225, .55); }
+  .card--featured .card__specs { margin-top: 12px; }
+</style>

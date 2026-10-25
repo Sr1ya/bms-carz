@@ -1,0 +1,255 @@
+---
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
+import Base from '../layouts/Base.astro';
+import CarCard from '../components/CarCard.astro';
+import ImageSlot from '../components/ImageSlot.astro';
+import { CARS } from '../data/cars';
+
+const featured = CARS.slice(0, 3);
+const hasVideo = existsSync(join(process.cwd(), 'public', 'video', 'hero.webm'));
+const heroDim = 0.15;
+
+const promises = [
+  ['I.', 'Inspected in full', '212 points across chassis, drivetrain, electronics and paint depth. The report ships with the car.'],
+  ['II.', 'History verified', 'Service records, ownership and odometer checked against the source. No structural or flood damage, ever.'],
+  ['III.', 'Priced in the open', 'One fair number on every listing. No negotiation theatre, no hidden handling fees.'],
+  ['IV.', 'Covered after sale', 'Six months of engine and gearbox warranty included, extendable to twenty-four.'],
+];
+---
+
+<Base overlayHeader>
+  <section class="hero">
+    <div class="hero__parallax" id="hero-parallax">
+      <div class="hero__media" data-hero-media>
+        {hasVideo ? (
+          <video muted loop playsinline preload="auto" poster="/video/hero-poster.jpg" aria-hidden="true">
+            <!-- Phones/tablets get a lighter 720p H.264 file (plays everywhere, incl. older iOS); desktops get 1080p. -->
+            <source src="/video/hero-720.mp4" type="video/mp4" media="(max-width: 1024px)" />
+            <source src="/video/hero.webm" type="video/webm" />
+            <source src="/video/hero-1080.mp4" type="video/mp4" />
+          </video>
+        ) : (
+          <ImageSlot id="bms-hero" hint="Hero film — add public/video/hero.webm" eager />
+        )}
+      </div>
+    </div>
+    <div class="hero__grad"></div>
+    <div class="hero__dim" style={`opacity: ${heroDim}`}></div>
+    <div class="hero__copy">
+      <div class="eyebrow hero__eyebrow" data-reveal data-hero-reveal>Bengaluru · Since 2011</div>
+      <h1 class="hero__title">
+        <span class="mask"><span data-line data-hero-reveal>Pre-owned.</span></span>
+        <span class="mask"><span data-line data-hero-reveal class="it" style="transition-delay: .14s">Uncompromised.</span></span>
+      </h1>
+      <div class="hero__foot">
+        <p class="hero__lede" data-reveal data-hero-reveal style="transition-delay: .3s">
+          A private collection of luxury and performance cars — each inspected, verified and priced in the open.
+        </p>
+        <a href="/collection/" class="hero__cta" data-reveal data-hero-reveal style="transition-delay: .42s">
+          <span>Explore the collection</span>
+          <span class="hero__cta-line"></span>
+        </a>
+      </div>
+    </div>
+    <div class="cue" aria-hidden="true">
+      <span class="cue__label">Scroll</span>
+      <span class="cue__track"><span class="cue__line"></span></span>
+    </div>
+  </section>
+
+  <section class="house">
+    <div class="eyebrow" data-reveal>The house</div>
+    <p class="house__quote" data-reveal>
+      Twenty-odd cars at a time. Each one we would <span class="it accent">keep ourselves.</span>
+    </p>
+    <div class="house__stats" data-reveal>
+      <div><div class="stat__n">212</div><div class="stat__k">Point inspection</div></div>
+      <div><div class="stat__n">3,400+</div><div class="stat__k">Cars delivered</div></div>
+      <div><div class="stat__n">6 mo</div><div class="stat__k">Warranty included</div></div>
+    </div>
+  </section>
+
+  <section class="floor">
+    <div class="floor__head">
+      <div>
+        <div class="eyebrow" data-reveal>The collection</div>
+        <h2 class="floor__title" data-reveal>Currently on the floor</h2>
+      </div>
+      <a href="/collection/" class="link-line" data-reveal>View all {CARS.length}</a>
+    </div>
+    <div class="floor__grid">
+      {featured.map((car, i) => <CarCard car={car} index={i} variant="featured" />)}
+    </div>
+  </section>
+
+  <section class="standard">
+    <div class="standard__grid">
+      <div>
+        <div class="eyebrow" data-reveal>Our standard</div>
+        <h2 class="standard__title" data-reveal>Four promises, <span class="it">every car.</span></h2>
+      </div>
+      <div class="standard__list">
+        {promises.map(([n, title, body], i) => (
+          <div class="promise" data-reveal style={i % 2 ? 'transition-delay: .1s' : undefined}>
+            <div class="promise__n">{n}</div>
+            <h3 class="promise__title">{title}</h3>
+            <p class="promise__body">{body}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="trade">
+    <div class="trade__media">
+      <ImageSlot id="bms-tradein" hint="Trade-in — keys handover or car under showroom light" />
+    </div>
+    <div class="trade__copy">
+      <div class="eyebrow" data-reveal>Sell or trade</div>
+      <h2 class="trade__title" data-reveal>Your car, valued <span class="it">within the hour.</span></h2>
+      <p class="trade__lede" data-reveal>
+        One inspection, one honest number, paid the same day — or carried straight into anything in the collection.
+      </p>
+      <form class="trade__form" data-reveal data-inline-form>
+        <label class="sr-only" for="trade-model">Make &amp; model</label>
+        <input id="trade-model" name="model" class="field" placeholder="Make & model" required />
+        <label class="sr-only" for="trade-year">Year &amp; kilometres</label>
+        <input id="trade-year" name="year" class="field" placeholder="Year & kilometres" required />
+        <button type="submit" class="btn btn--outline" data-sent="Request received">Request valuation</button>
+      </form>
+    </div>
+  </section>
+
+  <section class="appt">
+    <div class="eyebrow" data-reveal>By appointment</div>
+    <h2 class="appt__title" data-reveal>See it in person on <span class="it">Lavelle Road.</span></h2>
+    <div class="appt__ctas" data-reveal>
+      <a href="/contact/" class="btn btn--solid">Book a viewing</a>
+      <a href="tel:+919876543210" class="btn btn--line">+91 98765 43210</a>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .hero { position: relative; height: 100vh; height: 100svh; min-height: 640px; overflow: hidden; background: var(--bg); }
+  .hero__parallax { position: absolute; inset: 0; will-change: transform; }
+  .hero__media { position: absolute; inset: 0; }
+  /* The source film has letterbox bars baked in (~70px of 1080 top and bottom).
+     Oversize the box so cover-cropping always pushes them outside the section. */
+  .hero__media video {
+    position: absolute; left: 0; top: -7.5%; width: 100%; height: 115%;
+    object-fit: cover; display: block;
+  }
+  .hero__grad {
+    position: absolute; inset: 0; pointer-events: none;
+    background: linear-gradient(180deg, rgba(7,7,7,.6) 0%, rgba(7,7,7,.1) 30%, rgba(7,7,7,.15) 55%, rgba(7,7,7,.92) 100%);
+  }
+  .hero__dim { position: absolute; inset: 0; background: var(--bg); pointer-events: none; }
+  .hero__copy { position: absolute; left: 0; right: 0; bottom: 0; padding: 0 var(--gutter) clamp(40px, 7vh, 72px); }
+  .hero__eyebrow { margin-bottom: 26px; }
+  .hero__title { margin: 0; font-family: var(--serif); font-weight: 300; font-size: clamp(56px, 9.4vw, 164px); line-height: .92; letter-spacing: -.02em; }
+  .hero__foot { display: flex; align-items: flex-end; justify-content: space-between; gap: 32px; flex-wrap: wrap; margin-top: 40px; }
+  .hero__lede { margin: 0; max-width: 40ch; font-size: 15px; font-weight: 300; line-height: 1.75; color: rgba(236,232,225,.72); text-wrap: pretty; }
+  .hero__cta { display: flex; align-items: center; gap: 18px; font-size: 11px; font-weight: 500; letter-spacing: .28em; text-transform: uppercase; }
+  .hero__cta-line { display: block; width: 56px; height: 1px; background: currentColor; transition: width .6s var(--ease); }
+  .hero__cta:hover .hero__cta-line { width: 80px; }
+
+  /* Portrait phones/tablets: a widescreen film cropped to a tall screen only shows a sliver
+     of the car. Show it as a wide band across the top instead, fading into the page, with
+     the copy underneath. */
+  @media (orientation: portrait) and (max-width: 1024px) {
+    .hero__media {
+      bottom: auto; height: min(56svh, 75vw); top: clamp(56px, 9svh, 96px);
+      -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 14%, #000 72%, transparent 100%);
+      mask-image: linear-gradient(180deg, transparent 0, #000 14%, #000 72%, transparent 100%);
+    }
+  }
+  /* Phones: sit the band lower so it meets the headline instead of leaving a gap. */
+  @media (orientation: portrait) and (max-width: 600px) {
+    .hero__media { top: 17svh; }
+  }
+
+  /* Phones in landscape: the screen is shorter than the copy, so let the hero grow to fit
+     instead of pushing the headline below the fold. */
+  @media (orientation: landscape) and (max-height: 560px) {
+    .hero { height: auto; min-height: 100svh; display: flex; flex-direction: column; justify-content: flex-end; }
+    .hero__copy { position: relative; padding-top: 110px; padding-bottom: 32px; }
+    .hero__eyebrow { margin-bottom: 16px; }
+    .hero__title { font-size: clamp(40px, 7.5vw, 72px); }
+    .hero__foot { margin-top: 22px; }
+    .cue { display: none; }
+  }
+
+  .cue { position: absolute; right: var(--gutter); top: 50%; display: flex; flex-direction: column; align-items: center; gap: 14px; pointer-events: none; }
+  .cue__label { writing-mode: vertical-rl; font-size: 9px; letter-spacing: .4em; text-transform: uppercase; color: rgba(236,232,225,.5); }
+  .cue__track { position: relative; width: 1px; height: 56px; background: rgba(236,232,225,.14); overflow: hidden; }
+  .cue__line { position: absolute; inset: 0; background: var(--ink); animation: omCue 2.4s cubic-bezier(.65,0,.35,1) infinite; }
+  @keyframes omCue {
+    0% { transform: scaleY(0); transform-origin: top; }
+    50% { transform: scaleY(1); transform-origin: top; }
+    51% { transform-origin: bottom; }
+    100% { transform: scaleY(0); transform-origin: bottom; }
+  }
+  @media (max-width: 600px) { .cue { display: none; } }
+
+  .house { padding: clamp(110px, 16vw, 200px) var(--gutter); display: grid; justify-items: center; text-align: center; }
+  .house__quote { margin: 36px 0 0; max-width: 24ch; font-family: var(--serif); font-weight: 300; font-size: clamp(32px, 4.4vw, 64px); line-height: 1.14; letter-spacing: -.01em; text-wrap: balance; }
+  .house__stats { display: flex; gap: clamp(32px, 7vw, 110px); margin-top: 72px; flex-wrap: wrap; justify-content: center; }
+
+  .floor { padding: 0 var(--gutter) clamp(100px, 12vw, 160px); }
+  .floor__head { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; flex-wrap: wrap; padding-bottom: 28px; border-bottom: 1px solid var(--line); }
+  .floor__title { margin: 18px 0 0; font-family: var(--serif); font-weight: 300; font-size: clamp(40px, 5vw, 72px); line-height: 1; letter-spacing: -.01em; }
+  .floor__grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr)); gap: clamp(20px, 2.4vw, 36px); margin-top: 48px; }
+
+  .standard { padding: clamp(90px, 11vw, 150px) var(--gutter); border-top: 1px solid rgba(236,232,225,.08); background: var(--bg-alt); }
+  .standard__grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: 56px; }
+  .standard__title { margin: 18px 0 0; font-family: var(--serif); font-weight: 300; font-size: clamp(40px, 4.6vw, 64px); line-height: 1.02; }
+  .standard__list { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr)); gap: 0 48px; }
+  .promise { padding: 30px 0; border-top: 1px solid rgba(236,232,225,.12); }
+  .promise__n { font-family: var(--serif); font-style: italic; font-size: 20px; color: var(--accent); }
+  .promise__title { margin: 12px 0 10px; font-family: var(--serif); font-weight: 400; font-size: 26px; }
+  .promise__body { margin: 0; font-size: 14px; font-weight: 300; line-height: 1.8; color: rgba(236,232,225,.62); text-wrap: pretty; }
+  @media (max-width: 900px) { .standard__grid { grid-template-columns: 1fr; } }
+
+  .trade { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(340px, 100%), 1fr)); border-top: 1px solid rgba(236,232,225,.08); }
+  .trade__media { position: relative; min-height: 560px; background: var(--surface); overflow: hidden; }
+  .trade__copy { padding: clamp(48px, 7vw, 110px) clamp(24px, 5vw, 88px); display: flex; flex-direction: column; justify-content: center; }
+  .trade__title { margin: 20px 0 0; font-family: var(--serif); font-weight: 300; font-size: clamp(38px, 4.2vw, 60px); line-height: 1.04; }
+  .trade__lede { margin: 24px 0 0; max-width: 42ch; font-size: 15px; font-weight: 300; line-height: 1.8; color: rgba(236,232,225,.62); text-wrap: pretty; }
+  .trade__form { display: grid; gap: 26px; margin-top: 44px; max-width: 460px; }
+  .trade__form .field { padding: 12px 0; font-size: 15px; }
+  .trade__form .btn { justify-self: start; margin-top: 8px; }
+  @media (max-width: 700px) { .trade__media { min-height: 360px; } }
+
+  .appt { padding: clamp(120px, 15vw, 200px) var(--gutter); text-align: center; border-top: 1px solid rgba(236,232,225,.08); }
+  .appt__title { margin: 26px auto 0; max-width: 16ch; font-family: var(--serif); font-weight: 300; font-size: clamp(44px, 6.4vw, 104px); line-height: .98; text-wrap: balance; }
+  .appt__ctas { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; margin-top: 52px; }
+</style>
+
+<script>
+  import { bindInlineForms } from '../scripts/forms';
+
+  const parallax = document.getElementById('hero-parallax');
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // Scroll-linked parallax judders under touch scrolling, so keep it to mouse/trackpad devices.
+  const touch = window.matchMedia('(pointer: coarse)').matches;
+  if (parallax && !reduce && !touch) {
+    const onScroll = () => {
+      const y = window.scrollY;
+      if (y < window.innerHeight * 1.2) parallax.style.transform = `translate3d(0, ${(y * 0.3).toFixed(1)}px, 0)`;
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  }
+
+  const video = document.querySelector<HTMLVideoElement>('.hero video');
+  if (video) {
+    // Hold playback until the intro is gone so decoding doesn't compete with the logo animation.
+    const play = () => { video.muted = true; video.play()?.catch(() => {}); };
+    if (document.documentElement.classList.contains('is-loading')) window.addEventListener('bms:intro-done', play, { once: true });
+    else play();
+  }
+
+  bindInlineForms();
+</script>

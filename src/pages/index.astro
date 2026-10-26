@@ -11,10 +11,9 @@ const hasVideo = existsSync(join(process.cwd(), 'public', 'video', 'hero.webm'))
 const heroDim = 0.15;
 
 const promises = [
-  ['I.', 'Inspected in full', '212 points across chassis, drivetrain, electronics and paint depth. The report ships with the car.'],
-  ['II.', 'History verified', 'Service records, ownership and odometer checked against the source. No structural or flood damage, ever.'],
-  ['III.', 'Priced in the open', 'One fair number on every listing. No negotiation theatre, no hidden handling fees.'],
-  ['IV.', 'Covered after sale', 'Six months of engine and gearbox warranty included, extendable to twenty-four.'],
+  ['I.', 'History verified', 'Service records, ownership and odometer checked against the source. No structural or flood damage, ever.'],
+  ['II.', 'Priced in the open', 'One fair number on every listing. No negotiation theatre, no hidden handling fees.'],
+  ['III.', 'Covered after sale', 'Six months of engine and gearbox warranty included, extendable to twenty-four.'],
 ];
 ---
 
@@ -37,14 +36,14 @@ const promises = [
     <div class="hero__grad"></div>
     <div class="hero__dim" style={`opacity: ${heroDim}`}></div>
     <div class="hero__copy">
-      <div class="eyebrow hero__eyebrow" data-reveal data-hero-reveal>Bengaluru · Since 2011</div>
+      <div class="eyebrow hero__eyebrow" data-reveal data-hero-reveal>Navi Mumbai · Since 2011</div>
       <h1 class="hero__title">
         <span class="mask"><span data-line data-hero-reveal>Pre-owned.</span></span>
         <span class="mask"><span data-line data-hero-reveal class="it" style="transition-delay: .14s">Uncompromised.</span></span>
       </h1>
       <div class="hero__foot">
         <p class="hero__lede" data-reveal data-hero-reveal style="transition-delay: .3s">
-          A private collection of luxury and performance cars — each inspected, verified and priced in the open.
+          A private collection of luxury and performance cars — each verified and priced in the open.
         </p>
         <a href="/collection/" class="hero__cta" data-reveal data-hero-reveal style="transition-delay: .42s">
           <span>Explore the collection</span>
@@ -64,7 +63,7 @@ const promises = [
       Twenty-odd cars at a time. Each one we would <span class="it accent">keep ourselves.</span>
     </p>
     <div class="house__stats" data-reveal>
-      <div><div class="stat__n">212</div><div class="stat__k">Point inspection</div></div>
+      <div><div class="stat__n">15 yrs</div><div class="stat__k">In business</div></div>
       <div><div class="stat__n">3,400+</div><div class="stat__k">Cars delivered</div></div>
       <div><div class="stat__n">6 mo</div><div class="stat__k">Warranty included</div></div>
     </div>
@@ -87,7 +86,7 @@ const promises = [
     <div class="standard__grid">
       <div>
         <div class="eyebrow" data-reveal>Our standard</div>
-        <h2 class="standard__title" data-reveal>Four promises, <span class="it">every car.</span></h2>
+        <h2 class="standard__title" data-reveal>Three promises, <span class="it">every car.</span></h2>
       </div>
       <div class="standard__list">
         {promises.map(([n, title, body], i) => (
@@ -109,7 +108,7 @@ const promises = [
       <div class="eyebrow" data-reveal>Sell or trade</div>
       <h2 class="trade__title" data-reveal>Your car, valued <span class="it">within the hour.</span></h2>
       <p class="trade__lede" data-reveal>
-        One inspection, one honest number, paid the same day — or carried straight into anything in the collection.
+        One honest number, paid the same day — or carried straight into anything in the collection.
       </p>
       <form class="trade__form" data-reveal data-inline-form>
         <label class="sr-only" for="trade-model">Make &amp; model</label>
@@ -122,11 +121,11 @@ const promises = [
   </section>
 
   <section class="appt">
-    <div class="eyebrow" data-reveal>By appointment</div>
-    <h2 class="appt__title" data-reveal>See it in person on <span class="it">Lavelle Road.</span></h2>
+    <div class="eyebrow" data-reveal>Open every day</div>
+    <h2 class="appt__title" data-reveal>See it in person in <span class="it">Kharghar.</span></h2>
     <div class="appt__ctas" data-reveal>
       <a href="/contact/" class="btn btn--solid">Book a viewing</a>
-      <a href="tel:+919876543210" class="btn btn--line">+91 98765 43210</a>
+      <a href="tel:+917947137079" class="btn btn--line">+91 79 4713 7079</a>
     </div>
   </section>
 </Base>
@@ -155,19 +154,23 @@ const promises = [
   .hero__cta-line { display: block; width: 56px; height: 1px; background: currentColor; transition: width .6s var(--ease); }
   .hero__cta:hover .hero__cta-line { width: 80px; }
 
-  /* Portrait phones/tablets: a widescreen film cropped to a tall screen only shows a sliver
-     of the car. Show it as a wide band across the top instead, fading into the page, with
-     the copy underneath. */
+  /* Portrait phones/tablets: the film fills the whole screen behind the transparent header,
+     same as desktop, cropped to the centre of the car. The copy sits over the lower half,
+     so darken that part more to keep it readable. */
   @media (orientation: portrait) and (max-width: 1024px) {
-    .hero__media {
-      bottom: auto; height: min(56svh, 75vw); top: clamp(56px, 9svh, 96px);
-      -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 14%, #000 72%, transparent 100%);
-      mask-image: linear-gradient(180deg, transparent 0, #000 14%, #000 72%, transparent 100%);
+    .hero__media video { object-position: 50% 50%; }
+    .hero__grad {
+      background: linear-gradient(180deg, rgba(0, 0, 0,.55) 0%, rgba(0, 0, 0,.05) 25%, rgba(0, 0, 0,.2) 50%, rgba(0, 0, 0,.85) 78%, rgba(0, 0, 0,.95) 100%);
     }
   }
-  /* Phones: sit the band lower so it meets the headline instead of leaving a gap. */
+  /* Phones: zoom out a little so more of the car shows. The film is shorter than the screen,
+     so fade its top and bottom edges into the black page instead of leaving hard lines. */
   @media (orientation: portrait) and (max-width: 600px) {
-    .hero__media { top: 17svh; }
+    .hero__media video {
+      top: 4%; height: 92%;
+      -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 12%, #000 88%, transparent 100%);
+      mask-image: linear-gradient(180deg, transparent 0, #000 12%, #000 88%, transparent 100%);
+    }
   }
 
   /* Phones in landscape: the screen is shorter than the copy, so let the hero grow to fit

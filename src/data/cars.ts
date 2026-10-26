@@ -82,13 +82,6 @@ export const CARS: Car[] = [
     specs: [['Engine', '4.0L V8 Biturbo'], ['Power', '630 bhp'], ['0–100', '3.2 s'], ['Owners', '2'], ['Insurance', 'Valid to 01/27'], ['Registration', 'KA-05'], ['Colour', 'Graphite Grey'], ['Service', 'Full, Sundaram']] },
 ];
 
-export const SCORES: [string, number][] = [
-  ['Engine & drivetrain', 96],
-  ['Body & paint', 92],
-  ['Interior & electronics', 94],
-  ['Tyres & brakes', 88],
-];
-
 export const CATEGORIES = ['All', 'Sedan', 'SUV', 'Performance'] as const;
 
 export const lakhs = (c: Car) => (c.unit === 'cr' ? c.price * 100 : c.price);

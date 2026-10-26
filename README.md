@@ -1,6 +1,6 @@
 # BMS Carz
 
-Website for BMS Carz, a pre-owned luxury car showroom in Bengaluru. Built with [Astro](https://astro.build).
+Website for BMS Carz, a pre-owned luxury car showroom in Kharghar, Navi Mumbai. Built with [Astro](https://astro.build).
 
 ## Develop
 

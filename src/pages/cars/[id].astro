@@ -2,7 +2,7 @@
 import Base from '../../layouts/Base.astro';
 import CarCard from '../../components/CarCard.astro';
 import ImageSlot from '../../components/ImageSlot.astro';
-import { CARS, SCORES, type Car, money, emi, carName } from '../../data/cars';
+import { CARS, type Car, money, emi, carName } from '../../data/cars';
 import { PHOTO_CREDITS } from '../../data/photo-credits';
 
 export function getStaticPaths() {
@@ -57,17 +57,9 @@ const credit = PHOTO_CREDITS[car.id];
         </div>
         <div data-reveal>
           <aside class="panel">
-            <div class="eyebrow">Inspection</div>
-            <div class="scores">
-              {SCORES.map(([k, v]) => (
-                <div>
-                  <div class="score__row"><span>{k}</span><span class="score__val">{v} / 100</span></div>
-                  <div class="score__track"><div class="score__bar" style={`width: ${v}%`}></div></div>
-                </div>
-              ))}
-            </div>
+            <div class="eyebrow">Enquire</div>
             <a href={`/contact/?car=${car.id}`} class="btn btn--solid panel__btn">Book a test drive</a>
-            <a href="tel:+919876543210" class="btn btn--line panel__btn panel__btn--alt">Call the showroom</a>
+            <a href="tel:+917947137079" class="btn btn--line panel__btn panel__btn--alt">Call the showroom</a>
           </aside>
         </div>
       </div>
@@ -115,11 +107,6 @@ const credit = PHOTO_CREDITS[car.id];
 
   .panel { position: sticky; top: 120px; padding: 40px; border: 1px solid rgba(244, 245, 247,.12); background: #000; }
   .panel .eyebrow { letter-spacing: .34em; }
-  .scores { display: grid; gap: 24px; margin-top: 30px; }
-  .score__row { display: flex; justify-content: space-between; font-size: 13px; font-weight: 300; color: rgba(244, 245, 247,.78); }
-  .score__val { color: rgba(244, 245, 247,.5); }
-  .score__track { height: 1px; background: rgba(244, 245, 247,.12); margin-top: 12px; }
-  .score__bar { height: 1px; background: var(--stripe); }
   .panel__btn { display: block; margin-top: 40px; padding: 18px; }
   .panel__btn--alt { margin-top: 12px; border-color: rgba(244, 245, 247,.24); }
   @media (max-width: 600px) { .panel { padding: 28px 22px; } }

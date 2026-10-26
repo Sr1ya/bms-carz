@@ -1,7 +1,18 @@
 ---
 import Base from '../../layouts/Base.astro';
 import CarCard from '../../components/CarCard.astro';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { CARS, type Car, money, emi, carName, photo } from '../../data/cars';
+
+/** Width and height of a WebP, read from its header (lossy, lossless or extended). */
+function webpSize(file: string): [number, number] {
+  const b = readFileSync(file);
+  const kind = b.toString('ascii', 12, 16);
+  if (kind === 'VP8 ') return [b.readUInt16LE(26) & 0x3fff, b.readUInt16LE(28) & 0x3fff];
+  if (kind === 'VP8L') { const n = b.readUInt32LE(21); return [(n & 0x3fff) + 1, ((n >> 14) & 0x3fff) + 1]; }
+  return [b.readUIntLE(24, 3) + 1, b.readUIntLE(27, 3) + 1];
+}
 
 export function getStaticPaths() {
   return CARS.map((car) => ({ params: { id: car.id }, props: { car } }));
@@ -11,6 +22,8 @@ const { car } = Astro.props as { car: Car };
 const related = CARS.filter((c) => c.id !== car.id && c.cat === car.cat).slice(0, 3);
 const monthly = emi(car);
 const shots = Array.from({ length: car.photos }, (_, i) => photo(car, i + 1));
+// Each car's set is all portrait (4:5) or all square, so the viewer takes the first photo's shape.
+const [pw, ph] = webpSize(join(process.cwd(), 'public', shots[0]));
 const specs: [string, string][] = [
   ['Colour', car.colour],
   ['Body', car.cat],
@@ -37,11 +50,11 @@ const specs: [string, string][] = [
     </div>
 
     <div class="body">
-      <div class="viewer" data-reveal>
-        <div class="viewer__track" id="viewer-track">
+      <div class="viewer" data-reveal style={`width: min(100%, calc(78vh * ${(pw / ph).toFixed(4)}))`}>
+        <div class="viewer__track" id="viewer-track" style={`aspect-ratio: ${pw} / ${ph}`}>
           {shots.map((src, i) => (
             <div class="viewer__slide">
-              <img src={src} alt={`${carName(car)}, photo ${i + 1} of ${shots.length}`} width="1080" height="1350"
+              <img src={src} alt={`${carName(car)}, photo ${i + 1} of ${shots.length}`} width={pw} height={ph}
                 loading="eager" decoding="async" fetchpriority={i === 0 ? 'high' : 'low'} />
             </div>
           ))}
@@ -108,11 +121,12 @@ const specs: [string, string][] = [
   .viewer { position: relative; }
   .viewer__track {
     display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none;
-    aspect-ratio: 4 / 5; max-height: 78vh; background: var(--surface);
+    overscroll-behavior-x: contain; background: var(--surface);
   }
   .viewer__track::-webkit-scrollbar { display: none; }
-  .viewer__slide { flex: 0 0 100%; scroll-snap-align: center; }
-  /* A few photos are square; contain keeps the whole car in frame. */
+  /* snap-stop: a fast swipe still moves just one photo (iOS otherwise flings past several). */
+  .viewer__slide { flex: 0 0 100%; scroll-snap-align: center; scroll-snap-stop: always; }
+  /* The frame matches the photo shape; contain is a safety net for any odd one out. */
   .viewer__slide img { width: 100%; height: 100%; object-fit: contain; display: block; }
   .viewer__nav {
     position: absolute; top: calc(50% - 40px); width: 48px; height: 48px; border: 1px solid rgba(244, 245, 247, .24);

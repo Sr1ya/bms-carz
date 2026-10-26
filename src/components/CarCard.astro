@@ -46,9 +46,9 @@ const delay = `${((index % 3) * 0.12).toFixed(2)}s`;
   .card { display: block; color: inherit; }
   .card:hover { color: inherit; }
   .card[hidden] { display: none; }
-  /* Stock photos are shot 4:5 portrait (a few square), so keep cards close to that. */
-  .card__media { position: relative; overflow: hidden; background: var(--surface); aspect-ratio: 4 / 5; }
-  .card--related .card__media { aspect-ratio: 1 / 1; }
+  /* Stock photos are 4:5 or square. A square card keeps the whole width of either (a 4:5
+     photo only loses a little sky and road), so no car gets its sides cut off. */
+  .card__media { position: relative; overflow: hidden; background: var(--surface); aspect-ratio: 1 / 1; }
   .card__img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
   .card__row { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; margin-top: 22px; }
   .card__row--related { gap: 12px; margin-top: 18px; }

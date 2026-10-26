@@ -80,9 +80,9 @@ const carzPaths = paths(group('carz').body).map((p) => p.d);
   /* Nothing else paints while the logo draws. */
   .is-loading body > :not(.loader) { visibility: hidden; }
   .loader:not(.is-playing) .bms-logo * { animation-play-state: paused !important; }
-  /* Scales with the screen: ~56% of width on phones, capped at 520px on desktop,
+  /* Scales with the screen: ~56% of width on phones, capped at 360px on desktop,
      and limited by height so it stays modest on landscape phones. */
-  .loader__logo { width: clamp(180px, 56vw, 520px); max-width: 90svh; }
+  .loader__logo { width: clamp(180px, 56vw, 360px); max-width: 90svh; }
 
   /* Exit: logo slides up and out, then the curtain slides up to reveal the page. */
   .loader.is-done {
@@ -99,7 +99,7 @@ const carzPaths = paths(group('carz').body).map((p) => p.d);
   }
 
   /* ===== logo animation (verbatim from bms-carz-animated.html, --fg set to the site ink) ===== */
-  .bms-logo{width:100%;height:auto;display:block;overflow:visible;--fg:#ece8e1}
+  .bms-logo{width:100%;height:auto;display:block;overflow:visible;--fg:#f4f5f7}
   .bms-logo .draw{fill:var(--fg);fill-opacity:0;stroke:var(--fg);stroke-width:3;
      stroke-dasharray:1;stroke-dashoffset:1;
      animation:draw 1.3s cubic-bezier(.65,0,.35,1) var(--d,0s) forwards, fillin .5s ease-out calc(var(--d,0s) + 1.05s) forwards}

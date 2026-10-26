@@ -25,11 +25,14 @@ const fullTitle = title ? `${title} — BMS Carz` : 'BMS Carz — Pre-Owned Luxu
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{fullTitle}</title>
     <meta name="description" content={description} />
-    <meta name="theme-color" content="#070707" />
+    <meta name="theme-color" content="#000000" />
     <link rel="icon" type="image/svg+xml" href="/images/bms-carz-logo-white.svg" />
     <script is:inline>
       // Intro plays on arrival and on reload, not when clicking between pages or going back.
       // Decided before first paint so the page never flashes.
+      // om-motion is set here too: pages whose module script loads as a separate file would
+      // otherwise paint their headlines visible first, then snap them hidden and slide them in.
+      document.documentElement.classList.add('om-motion');
       try {
         var nav = performance.getEntriesByType('navigation')[0];
         var type = nav ? nav.type : 'navigate';
@@ -40,7 +43,7 @@ const fullTitle = title ? `${title} — BMS Carz` : 'BMS Carz — Pre-Owned Luxu
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Manrope:wght@300;400;500;600&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&display=swap"
       rel="stylesheet"
     />
   </head>
@@ -53,9 +56,8 @@ const fullTitle = title ? `${title} — BMS Carz` : 'BMS Carz — Pre-Owned Luxu
     <Footer />
 
     <script>
-      // Motion is opt-in: only hide content if transitions are verified to actually run.
+      // Motion is opt-in: content is only kept hidden if transitions are verified to actually run.
       const root = document.documentElement;
-      root.classList.add('om-motion');
       let verified = false;
       const probe = document.createElement('div');
       probe.style.cssText = 'position:fixed;left:-10px;top:0;width:1px;height:1px;opacity:0;transition:opacity 80ms linear;pointer-events:none';

@@ -39,8 +39,8 @@ const links = [
     transition: background .6s ease, padding .6s ease, border-color .6s ease;
   }
   .site-header.is-solid {
-    padding-top: 18px; padding-bottom: 18px; background: rgba(7, 7, 7, .82);
-    backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); border-bottom-color: rgba(236, 232, 225, .08);
+    padding-top: 18px; padding-bottom: 18px; background: rgba(0, 0, 0, .82);
+    backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); border-bottom-color: rgba(244, 245, 247, .08);
   }
   .brand { display: block; color: var(--ink); line-height: 0; }
   .brand:hover { color: var(--ink); }
@@ -49,9 +49,9 @@ const links = [
 
   .nav { display: flex; align-items: center; gap: clamp(14px, 2.6vw, 40px); font-size: 11px; font-weight: 500; letter-spacing: .24em; text-transform: uppercase; }
   .nav__links { display: flex; gap: clamp(14px, 2.6vw, 40px); }
-  .nav__link { color: rgba(236, 232, 225, .7); transition: color .4s; }
+  .nav__link { color: rgba(244, 245, 247, .7); transition: color .4s; }
   .nav__link:hover, .nav__link[aria-current] { color: var(--ink); }
-  .nav__cta { padding: 12px 22px; border: 1px solid rgba(236, 232, 225, .28); white-space: nowrap; transition: border-color .4s, background .4s, color .4s; }
+  .nav__cta { padding: 12px 22px; border: 1px solid rgba(244, 245, 247, .28); white-space: nowrap; transition: border-color .4s, background .4s, color .4s; }
   .nav__cta:hover { border-color: var(--ink); background: var(--ink); color: var(--bg); }
 
   .nav__toggle { display: none; position: relative; width: 28px; height: 28px; padding: 0; background: none; border: 0; cursor: pointer; }
@@ -66,7 +66,7 @@ const links = [
     .nav__cta { padding: 10px 14px; letter-spacing: .18em; }
     .nav__links {
       position: fixed; top: 0; left: 0; right: 0; z-index: -1; flex-direction: column; gap: 28px;
-      padding: 100px var(--gutter) 40px; background: rgba(7, 7, 7, .96); border-bottom: 1px solid var(--line);
+      padding: 100px var(--gutter) 40px; background: rgba(0, 0, 0, .96); border-bottom: 1px solid var(--line);
       font-size: 13px; transform: translateY(-100%); transition: transform .6s var(--ease); visibility: hidden;
     }
     .nav__links.is-open { transform: none; visibility: visible; }

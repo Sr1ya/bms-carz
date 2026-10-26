@@ -1,0 +1,40 @@
+---
+import Base from '../layouts/Base.astro';
+import { CARS, carName } from '../data/cars';
+import { PHOTO_CREDITS } from '../data/photo-credits';
+
+const rows = CARS.filter((c) => PHOTO_CREDITS[c.id]).map((c) => ({ car: c, credit: PHOTO_CREDITS[c.id] }));
+---
+
+<Base title="Photo credits" description="Credits and licences for the car photography on this site.">
+  <section class="page">
+    <div class="eyebrow" data-reveal>Credits</div>
+    <h1 class="page-title">
+      <span class="mask"><span data-line data-hero-reveal>Photo <span class="it">credits.</span></span></span>
+    </h1>
+    <p class="intro" data-reveal>
+      Car photography is sourced from Wikimedia Commons and used under the licences below. Each image links to its original file.
+    </p>
+    <ul class="list" data-reveal>
+      {rows.map(({ car, credit }) => (
+        <li class="row">
+          <a href={`/cars/${car.id}/`} class="row__car">{carName(car)}</a>
+          <span class="row__by">
+            <a href={credit.source} rel="noopener" target="_blank">{credit.author}</a> ·
+            <a href={credit.licenseUrl} rel="noopener license" target="_blank">{credit.license}</a>
+          </span>
+        </li>
+      ))}
+    </ul>
+  </section>
+</Base>
+
+<style>
+  .intro { max-width: 56ch; margin: 40px 0 0; font-size: 15px; font-weight: 300; line-height: 1.75; color: rgba(244, 245, 247, .64); }
+  .list { margin: 64px 0 0; padding: 0; list-style: none; border-top: 1px solid var(--line); }
+  .row { display: flex; justify-content: space-between; align-items: baseline; gap: 8px 24px; flex-wrap: wrap; padding: 20px 0; border-bottom: 1px solid var(--line); }
+  .row__car { font-family: var(--display); font-stretch: 125%; text-transform: uppercase; font-size: 15px; font-weight: 400; }
+  .row__by { font-size: 13px; color: rgba(244, 245, 247, .5); }
+  .row__by a { color: rgba(244, 245, 247, .7); }
+  .row__by a:hover { color: var(--accent); }
+</style>

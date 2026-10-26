@@ -18,11 +18,12 @@ const promises = [
 ---
 
 <Base overlayHeader>
+  {hasVideo && <link slot="head" rel="preload" as="image" href="/video/hero-poster.jpg" fetchpriority="high" />}
   <section class="hero">
     <div class="hero__parallax" id="hero-parallax">
       <div class="hero__media" data-hero-media>
         {hasVideo ? (
-          <video muted loop playsinline preload="auto" poster="/video/hero-poster.jpg" aria-hidden="true">
+          <video muted loop playsinline preload="none" poster="/video/hero-poster.jpg" aria-hidden="true">
             <!-- One 1080p WebM for every device. Browsers that can't play WebM show the poster. -->
             <source src="/video/hero.webm" type="video/webm" />
           </video>
@@ -253,8 +254,13 @@ const promises = [
   if (video) {
     // Hold playback until the intro is gone so decoding doesn't compete with the logo animation.
     const play = () => { video.muted = true; video.play()?.catch(() => {}); };
-    if (document.documentElement.classList.contains('is-loading')) window.addEventListener('bms:intro-done', play, { once: true });
-    else play();
+    const intro = document.documentElement.classList.contains('is-loading');
+    // The poster is the first paint; the 2 MB film only starts downloading once the page has loaded,
+    // so on mobile it doesn't hold up the poster, fonts and photos. It still buffers during the intro.
+    const loaded = () => { video.preload = 'auto'; if (!intro) play(); };
+    if (document.readyState === 'complete') loaded();
+    else window.addEventListener('load', loaded, { once: true });
+    if (intro) window.addEventListener('bms:intro-done', play, { once: true });
   }
 
   bindInlineForms();

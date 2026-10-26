@@ -65,6 +65,11 @@ export function emi(c: Car) {
 export const carName = (c: Car) => [c.year, c.make, c.model].filter(Boolean).join(' ');
 
 export const photo = (c: Car, n = 1) => `/stock/${c.id}/${String(n).padStart(2, '0')}.webp`;
+/** Smaller copies made by scripts/stock-sizes.mjs: 720 or 400px wide, or 160px for thumbnails. */
+export const photoAt = (c: Car, n: number, w: 720 | 400 | 160) => `/stock/${c.id}/${w}/${String(n).padStart(2, '0')}.webp`;
+/** srcset for a photo: the smaller copies plus the original (pass its real width when known). */
+export const photoSrcset = (c: Car, n = 1, full = 1080) =>
+  `${photoAt(c, n, 400)} 400w, ${photoAt(c, n, 720)} 720w, ${photo(c, n)} ${full}w`;
 
 /** The card/spec line: whichever of kms, fuel and gearbox are known, else colour and body. */
 export const summary = (c: Car) => {

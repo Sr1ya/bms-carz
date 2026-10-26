@@ -3,7 +3,7 @@ import Base from '../../layouts/Base.astro';
 import CarCard from '../../components/CarCard.astro';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { CARS, type Car, money, emi, carName, photo } from '../../data/cars';
+import { CARS, type Car, money, emi, carName, photo, photoAt, photoSrcset } from '../../data/cars';
 
 /** Width and height of a WebP, read from its header (lossy, lossless or extended). */
 function webpSize(file: string): [number, number] {
@@ -57,8 +57,8 @@ const specs: [string, string][] = [
           <div class="strip">
             {shots.map((src, i) => (
               <div class="slide">
-                <img src={src} alt={`${carName(car)}, photo ${i + 1} of ${shots.length}`} width={pw} height={ph}
-                  loading="eager" decoding="async" fetchpriority={i === 0 ? 'high' : 'low'} draggable="false" />
+                <img src={src} srcset={photoSrcset(car, i + 1, pw)} sizes={`(max-width: 900px) calc(100vw - 40px), min(55vw, ${Math.round(78 * pw / ph)}vh)`} alt={`${carName(car)}, photo ${i + 1} of ${shots.length}`} width={pw} height={ph}
+                  loading={i === 0 ? 'eager' : 'lazy'} decoding="async" fetchpriority={i === 0 ? 'high' : 'low'} draggable="false" />
               </div>
             ))}
           </div>
@@ -70,9 +70,9 @@ const specs: [string, string][] = [
         <button type="button" class="viewer__nav viewer__nav--next" data-step="1" aria-label="Next photo">›</button>
         <div class="viewer__count label" id="viewer-count">1 / {shots.length}</div>
         <div class="thumbs" id="viewer-thumbs">
-          {shots.map((src, i) => (
+          {shots.map((_, i) => (
             <button type="button" class="thumb" aria-label={`Show photo ${i + 1}`} aria-current={i === 0 ? 'true' : undefined}>
-              <img src={src} alt="" loading="eager" decoding="async" fetchpriority="low" />
+              <img src={photoAt(car, i + 1, 160)} alt="" loading="eager" decoding="async" fetchpriority="low" width="160" height={Math.round(160 * ph / pw)} />
             </button>
           ))}
         </div>
@@ -86,7 +86,7 @@ const specs: [string, string][] = [
         <div class="lb__stage" id="lb-stage">
           <div class="strip">
             {shots.map((src, i) => (
-              <div class="slide"><img src={src} alt={`${carName(car)}, photo ${i + 1} of ${shots.length}`} decoding="async" draggable="false" /></div>
+              <div class="slide"><img src={src} alt={`${carName(car)}, photo ${i + 1} of ${shots.length}`} loading="lazy" decoding="async" draggable="false" /></div>
             ))}
           </div>
         </div>

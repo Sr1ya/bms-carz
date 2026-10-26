@@ -1,3 +1,15 @@
+/* Self-hosted (was Google Fonts, whose stylesheet blocked first render on mobile).
+   Cut down from the full variable font to what the site uses: weights 300–600, widths 100–125%,
+   Latin plus ₹ and a few symbols. Rebuild it with fonttools if a new weight or character is needed. */
+@font-face {
+  font-family: 'Archivo';
+  font-style: normal;
+  font-weight: 300 600;
+  font-stretch: 100% 125%;
+  font-display: swap;
+  src: url(/fonts/archivo.woff2) format('woff2');
+}
+
 :root {
   /* Pulled from the logo's three stripes. */
   --accent: #2e8be0;
@@ -44,6 +56,10 @@ button { font: inherit; }
 /* Behind the intro curtain the hero film is already painted (that is the page's main image as far
    as LCP is concerned); the curtain lifting is its reveal, so only the settle-in zoom runs. */
 .is-loading [data-hero-media], .om-motion [data-hero-media].om-curtain { opacity: 1; transition: transform 3.2s var(--ease); }
+/* Headlines also sit painted in place behind the curtain, so pages without a hero image (contact)
+   still have an LCP. When the intro ends they snap back down (.om-snap) and slide in as usual. */
+.is-loading [data-line], .om-snap [data-line] { transition: none; }
+.is-loading [data-line] { transform: none; }
 /* Page-to-page crossfade (cross-document view transitions; browsers without support just navigate). */
 @view-transition { navigation: auto; }
 ::view-transition-old(root) { animation: .35s var(--ease) both vt-out; }

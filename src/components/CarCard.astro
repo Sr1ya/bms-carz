@@ -1,5 +1,5 @@
 ---
-import { type Car, money, carName, lakhs, photo, summary } from '../data/cars';
+import { type Car, money, carName, lakhs, photo, photoSrcset, summary } from '../data/cars';
 
 interface Props {
   car: Car;
@@ -9,6 +9,12 @@ interface Props {
 
 const { car, index, variant = 'grid' } = Astro.props;
 const delay = `${((index % 3) * 0.12).toFixed(2)}s`;
+// Rendered widths (phones have 20px gutters): one column on phones (two for the collection and related grids), up to three on desktop.
+const sizes = {
+  featured: '(max-width: 700px) calc(100vw - 40px), 33vw',
+  grid: '(max-width: 1100px) 50vw, 33vw',
+  related: '(max-width: 1100px) 50vw, 33vw',
+};
 ---
 
 <a
@@ -22,7 +28,7 @@ const delay = `${((index % 3) * 0.12).toFixed(2)}s`;
 >
   <div class="card__media">
     <div class="zoom">
-      <img class="card__img" src={photo(car)} alt={carName(car)} loading="lazy" decoding="async" width="1080" height="1350" />
+      <img class="card__img" src={photo(car)} srcset={photoSrcset(car)} sizes={sizes[variant]} alt={carName(car)} loading="lazy" decoding="async" width="1080" height="1350" />
     </div>
   </div>
   {variant === 'related' ? (

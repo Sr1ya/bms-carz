@@ -56,6 +56,10 @@ const DIRECTIONS = 'https://www.google.com/maps/dir/?api=1&destination=' +
   .form { display: grid; gap: 30px; align-content: start; }
   .form .btn { justify-self: start; margin-top: 10px; padding: 18px 38px; }
   .info { display: grid; gap: 40px; align-content: start; }
+  @media (max-width: 600px) {
+    .grid { margin-top: 48px; gap: 56px; }
+    .addr { font-size: 19px; }
+  }
   .addr { margin-top: 12px; font-size: 22px; font-weight: 300; line-height: 1.4; }
   .text { margin-top: 12px; font-size: 15px; font-weight: 300; line-height: 1.8; color: rgba(244, 245, 247,.78); }
   .text--ink { color: var(--ink); }
@@ -66,6 +70,7 @@ const DIRECTIONS = 'https://www.google.com/maps/dir/?api=1&destination=' +
     background: rgba(244, 245, 247,.12); border: 1px solid rgba(244, 245, 247,.12);
   }
   .location__addr { background: var(--bg); padding: clamp(24px, 3vw, 40px); }
+  @media (max-width: 1024px) { .location { grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); } }
   @media (max-width: 760px) { .location { grid-template-columns: 1fr; } }
   .map { min-height: 260px; overflow: hidden; background: var(--surface); }
   /* Google's embed has no dark style, so invert the street map and turn the hues back round. */

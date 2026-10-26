@@ -59,4 +59,21 @@ const delay = `${((index % 3) * 0.12).toFixed(2)}s`;
   .card__model--related { font-family: var(--display); font-stretch: 125%; text-transform: uppercase; font-size: 15px; }
   .card__specs { margin-top: 10px; font-size: 12px; font-weight: 300; letter-spacing: .06em; color: rgba(244, 245, 247, .55); }
   .card--featured .card__specs { margin-top: 12px; }
+  /* Phones show the collection two-up, so the text steps down to fit a half-width card. */
+  @media (max-width: 600px) {
+    /* Stack every card the same way: make, model, price, details. */
+    .card--grid { display: flex; flex-direction: column; }
+    .card--grid .card__row { display: contents; }
+    .card--grid .meta { order: 1; margin-top: 12px; }
+    .card--grid .card__model { order: 2; }
+    .card--grid .price { order: 3; margin-top: 6px; }
+    .card--grid .card__specs { order: 4; }
+    .card--related .card__row { flex-direction: column; align-items: flex-start; gap: 4px; margin-top: 12px; }
+    .card--grid .meta { letter-spacing: .2em; font-size: 9px; }
+    .card--grid .price, .card--related .price { font-size: 11px; }
+    .card--grid .card__model { margin-top: 6px; font-size: 14px; }
+    .card--grid .card__specs { margin-top: 6px; font-size: 11px; letter-spacing: .02em; }
+    .card__model--related { font-size: 13px; }
+    .card--featured .card__model { font-size: 24px; }
+  }
 </style>

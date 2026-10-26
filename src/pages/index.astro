@@ -199,6 +199,11 @@ const promises = [
   .house { padding: clamp(110px, 16vw, 200px) var(--gutter); display: grid; justify-items: center; text-align: center; }
   .house__quote { margin: 36px 0 0; max-width: 30ch; font-weight: 300; font-size: clamp(26px, 3vw, 44px); line-height: 1.25; letter-spacing: -.01em; text-wrap: balance; }
   .house__stats { display: flex; gap: clamp(32px, 7vw, 110px); margin-top: 72px; flex-wrap: wrap; justify-content: center; }
+  @media (max-width: 600px) {
+    .house__stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; width: 100%; margin-top: 48px; }
+    .house__stats .stat__n { font-size: 22px; }
+    .house__stats .stat__k { font-size: 9px; letter-spacing: .14em; line-height: 1.5; }
+  }
 
   .floor { padding: 0 var(--gutter) clamp(100px, 12vw, 160px); }
   .floor__head { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; flex-wrap: wrap; padding-bottom: 28px; border-bottom: 1px solid var(--line); }

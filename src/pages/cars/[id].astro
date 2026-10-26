@@ -148,6 +148,15 @@ const specs: [string, string][] = [
   .related__title { margin: 0; font-family: var(--display); font-stretch: 125%; text-transform: uppercase; font-weight: 400; font-size: 28px; }
   .related__all { font-size: 11px; font-weight: 500; letter-spacing: .24em; text-transform: uppercase; color: rgba(244, 245, 247,.65); white-space: nowrap; }
   .related__grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr)); gap: clamp(20px, 2.4vw, 36px); margin-top: 40px; }
+  @media (max-width: 600px) {
+    .detail { padding-top: 104px; padding-bottom: 96px; }
+    .top { margin-top: 22px; padding-bottom: 24px; }
+    .body { margin-top: 28px; }
+    .related { margin-top: 88px; }
+    .related__title { font-size: 22px; }
+    .related__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 28px; }
+    .related__grid > :global(:nth-child(n + 3)) { display: none; }
+  }
 </style>
 
 <script>

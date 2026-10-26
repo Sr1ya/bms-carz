@@ -41,6 +41,9 @@ button { font: inherit; }
 .om-motion [data-line].om-in { transform: none; }
 .om-motion [data-hero-media] { opacity: 0; transform: scale(1.08); transition: opacity 2s ease, transform 3.2s var(--ease); }
 .om-motion [data-hero-media].om-in { opacity: 1; transform: none; }
+/* Behind the intro curtain the hero film is already painted (that is the page's main image as far
+   as LCP is concerned); the curtain lifting is its reveal, so only the settle-in zoom runs. */
+.is-loading [data-hero-media], .om-motion [data-hero-media].om-curtain { opacity: 1; transition: transform 3.2s var(--ease); }
 /* Page-to-page crossfade (cross-document view transitions; browsers without support just navigate). */
 @view-transition { navigation: auto; }
 ::view-transition-old(root) { animation: .35s var(--ease) both vt-out; }

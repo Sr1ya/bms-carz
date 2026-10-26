@@ -78,8 +78,9 @@ const carzPaths = paths(group('carz').body).map((p) => p.d);
   }
   .is-loading .loader, .loader.is-done { display: grid; }
   .is-loading body { overflow: hidden; }
-  /* Nothing else paints while the logo draws. */
-  .is-loading body > :not(.loader) { visibility: hidden; }
+  /* Nothing else paints while the logo draws, except the page itself sitting still under the
+     opaque loader: without a painted main image Lighthouse has no LCP and Performance errors out. */
+  .is-loading body > :not(.loader, main) { visibility: hidden; }
   .loader:not(.is-playing) .bms-logo * { animation-play-state: paused !important; }
   /* Scales with the screen: ~56% of width on phones, capped at 360px on desktop,
      and limited by height so it stays modest on landscape phones. */

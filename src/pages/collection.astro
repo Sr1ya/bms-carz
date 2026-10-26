@@ -2,6 +2,9 @@
 import Base from '../layouts/Base.astro';
 import CarCard from '../components/CarCard.astro';
 import { CARS, CATEGORIES } from '../data/cars';
+
+// Sorting by price only makes sense once prices are filled in.
+const priced = CARS.some((c) => c.price !== undefined);
 ---
 
 <Base title="The collection">
@@ -9,7 +12,7 @@ import { CARS, CATEGORIES } from '../data/cars';
     <div class="eyebrow" data-reveal>The collection</div>
     <div class="head">
       <h1 class="page-title head__title" data-reveal><span id="count">{CARS.length}</span> cars, <span class="it">hand-picked.</span></h1>
-      <button type="button" class="sort" id="sort" data-reveal>Sort — <span id="sort-label">Featured</span></button>
+      {priced && <button type="button" class="sort" id="sort" data-reveal>Sort — <span id="sort-label">Featured</span></button>}
     </div>
     <div class="filters" role="group" aria-label="Filter by category">
       {CATEGORIES.map((label, i) => (
@@ -42,8 +45,8 @@ import { CARS, CATEGORIES } from '../data/cars';
   const grid = document.getElementById('grid')!;
   const cards = [...grid.querySelectorAll<HTMLElement>('[data-cat]')];
   const count = document.getElementById('count')!;
-  const sortBtn = document.getElementById('sort')!;
-  const sortLabel = document.getElementById('sort-label')!;
+  const sortBtn = document.getElementById('sort');
+  const sortLabel = document.getElementById('sort-label');
   const filters = [...document.querySelectorAll<HTMLButtonElement>('[data-filter]')];
 
   const SORTS = ['featured', 'low', 'high'] as const;
@@ -53,9 +56,11 @@ import { CARS, CATEGORIES } from '../data/cars';
 
   function render() {
     const num = (el: HTMLElement, k: string) => Number(el.dataset[k]);
+    // Cars without a price sort last either way.
+    const price = (el: HTMLElement, missing: number) => (el.dataset.price ? Number(el.dataset.price) : missing);
     const sorted = [...cards].sort((a, b) =>
-      sort === 'low' ? num(a, 'price') - num(b, 'price')
-      : sort === 'high' ? num(b, 'price') - num(a, 'price')
+      sort === 'low' ? price(a, Infinity) - price(b, Infinity)
+      : sort === 'high' ? price(b, -Infinity) - price(a, -Infinity)
       : num(a, 'order') - num(b, 'order'));
     let shown = 0;
     sorted.forEach((card) => {
@@ -65,12 +70,12 @@ import { CARS, CATEGORIES } from '../data/cars';
       grid.appendChild(card);
     });
     count.textContent = String(shown);
-    sortLabel.textContent = LABELS[sort];
+    if (sortLabel) sortLabel.textContent = LABELS[sort];
     filters.forEach((f) => f.setAttribute('aria-pressed', String(f.dataset.filter === filter)));
     window.dispatchEvent(new Event('bms:rescan'));
   }
 
-  sortBtn.addEventListener('click', () => {
+  sortBtn?.addEventListener('click', () => {
     sort = SORTS[(SORTS.indexOf(sort) + 1) % SORTS.length];
     render();
   });

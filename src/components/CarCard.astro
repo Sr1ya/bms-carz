@@ -1,6 +1,5 @@
 ---
-import ImageSlot from './ImageSlot.astro';
-import { type Car, money, carName, lakhs } from '../data/cars';
+import { type Car, money, carName, lakhs, photo, summary } from '../data/cars';
 
 interface Props {
   car: Car;
@@ -18,12 +17,12 @@ const delay = `${((index % 3) * 0.12).toFixed(2)}s`;
   style={`transition-delay: ${delay}`}
   data-reveal
   data-cat={car.cat}
-  data-price={lakhs(car)}
+  data-price={lakhs(car) ?? ''}
   data-order={index}
 >
   <div class="card__media">
     <div class="zoom">
-      <ImageSlot id={`car-${car.id}`} hint={carName(car)} />
+      <img class="card__img" src={photo(car)} alt={carName(car)} loading="lazy" decoding="async" width="1080" height="1350" />
     </div>
   </div>
   {variant === 'related' ? (
@@ -34,11 +33,11 @@ const delay = `${((index % 3) * 0.12).toFixed(2)}s`;
   ) : (
     <>
       <div class="card__row">
-        <div class="meta">{car.year} · {car.make}</div>
+        <div class="meta">{[car.year, car.make].filter(Boolean).join(' · ')}</div>
         <div class="price">{money(car)}</div>
       </div>
       <h3 class="card__model">{car.model}</h3>
-      <div class="card__specs">{car.kms} · {car.fuel} · {car.gearbox}</div>
+      <div class="card__specs">{summary(car)}</div>
     </>
   )}
 </a>
@@ -47,9 +46,10 @@ const delay = `${((index % 3) * 0.12).toFixed(2)}s`;
   .card { display: block; color: inherit; }
   .card:hover { color: inherit; }
   .card[hidden] { display: none; }
-  .card__media { position: relative; overflow: hidden; background: var(--surface); aspect-ratio: 4 / 3; }
-  .card--featured .card__media { aspect-ratio: 4 / 5; }
-  .card--related .card__media { aspect-ratio: 16 / 10; }
+  /* Stock photos are shot 4:5 portrait (a few square), so keep cards close to that. */
+  .card__media { position: relative; overflow: hidden; background: var(--surface); aspect-ratio: 4 / 5; }
+  .card--related .card__media { aspect-ratio: 1 / 1; }
+  .card__img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
   .card__row { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; margin-top: 22px; }
   .card__row--related { gap: 12px; margin-top: 18px; }
   .meta { font-size: 10px; font-weight: 500; letter-spacing: .3em; text-transform: uppercase; color: rgba(244, 245, 247, .5); }

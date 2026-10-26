@@ -1,9 +1,7 @@
 ---
 import Base from '../../layouts/Base.astro';
 import CarCard from '../../components/CarCard.astro';
-import ImageSlot from '../../components/ImageSlot.astro';
-import { CARS, type Car, money, emi, carName } from '../../data/cars';
-import { PHOTO_CREDITS } from '../../data/photo-credits';
+import { CARS, type Car, money, emi, carName, photo } from '../../data/cars';
 
 export function getStaticPaths() {
   return CARS.map((car) => ({ params: { id: car.id }, props: { car } }));
@@ -11,58 +9,72 @@ export function getStaticPaths() {
 
 const { car } = Astro.props as { car: Car };
 const related = CARS.filter((c) => c.id !== car.id && c.cat === car.cat).slice(0, 3);
-const credit = PHOTO_CREDITS[car.id];
+const monthly = emi(car);
+const shots = Array.from({ length: car.photos }, (_, i) => photo(car, i + 1));
+const specs: [string, string][] = [
+  ['Colour', car.colour],
+  ['Body', car.cat],
+  ...([['Year', car.year && String(car.year)], ['Kilometres', car.kms], ['Fuel', car.fuel], ['Gearbox', car.gearbox]]
+    .filter(([, v]) => v) as [string, string][]),
+  ...(car.specs ?? []),
+];
 ---
 
-<Base title={carName(car)} description={car.blurb}>
+<Base title={carName(car)} description={car.blurb ?? `${carName(car)} in ${car.colour.toLowerCase()}, available at BMS Carz, Kharghar.`}>
   <section class="detail">
-    <div class="hero">
-      <div class="hero__media" data-hero-media data-hero-reveal>
-        <ImageSlot id={`car-${car.id}`} hint={`${carName(car)} — wide hero`} alt={carName(car)} eager />
+    <a href="/collection/" class="back">← The collection</a>
+    <div class="top">
+      <div>
+        <div class="eyebrow">{[car.year, car.make].filter(Boolean).join(' · ')}</div>
+        <h1 class="title">
+          <span class="mask"><span data-line data-hero-reveal>{car.model}</span></span>
+        </h1>
       </div>
-      <div class="hero__grad"></div>
-      <div class="hero__copy">
-        <div>
-          <a href="/collection/" class="back">← The collection</a>
-          <div class="eyebrow hero__eyebrow">{car.year} · {car.make}</div>
-          <h1 class="hero__title">
-            <span class="mask"><span data-line data-hero-reveal>{car.model}</span></span>
-          </h1>
-        </div>
-        <div class="hero__price">
-          <div class="hero__amount">{money(car)}</div>
-          <div class="hero__emi">Finance from {emi(car)} / month</div>
-        </div>
+      <div class="price">
+        <div class="price__amount">{money(car)}</div>
+        {monthly && <div class="price__emi">Finance from {monthly} / month</div>}
       </div>
     </div>
 
     <div class="body">
-      <div class="body__grid">
-        <div>
-          <p class="blurb" data-reveal>{car.blurb}</p>
-          <dl class="specs" data-reveal>
-            {car.specs.map(([k, v]) => (
-              <div class="spec">
-                <dt class="label">{k}</dt>
-                <dd>{v}</dd>
-              </div>
-            ))}
-          </dl>
-          {credit && (
-            <p class="credit">
-              Photo: <a href={credit.source} rel="noopener" target="_blank">{credit.author}</a>,
-              <a href={credit.licenseUrl} rel="noopener license" target="_blank">{credit.license}</a>, via Wikimedia Commons
-            </p>
-          )}
+      <div class="viewer" data-reveal>
+        <div class="viewer__track" id="viewer-track">
+          {shots.map((src, i) => (
+            <div class="viewer__slide">
+              <img src={src} alt={`${carName(car)}, photo ${i + 1} of ${shots.length}`} width="1080" height="1350"
+                loading="eager" decoding="async" fetchpriority={i === 0 ? 'high' : 'low'} />
+            </div>
+          ))}
         </div>
-        <div data-reveal>
-          <aside class="panel">
-            <div class="eyebrow">Enquire</div>
-            <a href={`/contact/?car=${car.id}`} class="btn btn--solid panel__btn">Book a test drive</a>
-            <a href="tel:+917947137079" class="btn btn--line panel__btn panel__btn--alt">Call the showroom</a>
-          </aside>
+        <button type="button" class="viewer__nav viewer__nav--prev" id="viewer-prev" aria-label="Previous photo">‹</button>
+        <button type="button" class="viewer__nav viewer__nav--next" id="viewer-next" aria-label="Next photo">›</button>
+        <div class="viewer__count label" id="viewer-count">1 / {shots.length}</div>
+        <div class="thumbs" id="viewer-thumbs">
+          {shots.map((src, i) => (
+            <button type="button" class="thumb" aria-label={`Show photo ${i + 1}`} aria-current={i === 0 ? 'true' : undefined}>
+              <img src={src} alt="" loading="eager" decoding="async" fetchpriority="low" />
+            </button>
+          ))}
         </div>
       </div>
+
+      <div class="info">
+        {car.blurb && <p class="blurb" data-reveal>{car.blurb}</p>}
+        <dl class="specs" data-reveal>
+          {specs.map(([k, v]) => (
+            <div class="spec">
+              <dt class="label">{k}</dt>
+              <dd>{v}</dd>
+            </div>
+          ))}
+        </dl>
+        <aside class="panel" data-reveal>
+          <div class="eyebrow">Enquire</div>
+          <a href={`/contact/?car=${car.id}`} class="btn btn--solid panel__btn">Book a test drive</a>
+          <a href="tel:+917947137079" class="btn btn--line panel__btn panel__btn--alt">Call the showroom</a>
+        </aside>
+      </div>
+    </div>
 
       {related.length > 0 && (
         <div class="related">
@@ -75,39 +87,59 @@ const credit = PHOTO_CREDITS[car.id];
           </div>
         </div>
       )}
-    </div>
   </section>
 </Base>
 
 <style>
-  .detail { padding-bottom: 140px; }
-  .hero { position: relative; height: 82vh; min-height: 520px; overflow: hidden; background: var(--surface); }
-  .hero__media { position: absolute; inset: 0; }
-  .hero__grad { position: absolute; inset: 0; pointer-events: none; background: linear-gradient(180deg, rgba(0, 0, 0,.6), rgba(0, 0, 0,0) 35%, rgba(0, 0, 0,.2) 60%, #000000); }
-  .hero__copy { position: absolute; left: 0; right: 0; bottom: 0; padding: 0 var(--gutter) 48px; display: flex; align-items: flex-end; justify-content: space-between; gap: 32px; flex-wrap: wrap; }
-  .back { display: inline-block; margin-bottom: 26px; font-size: 10px; font-weight: 500; letter-spacing: .3em; text-transform: uppercase; color: rgba(244, 245, 247,.6); transition: color .4s; }
+  .detail { padding: 150px var(--gutter) 140px; }
+  .back { display: inline-block; font-size: 10px; font-weight: 500; letter-spacing: .3em; text-transform: uppercase; color: rgba(244, 245, 247,.6); transition: color .4s; }
   .back:hover { color: var(--ink); }
-  .hero__eyebrow { letter-spacing: .34em; }
-  .hero__title { margin: 14px 0 0; font-family: var(--display); font-stretch: 125%; text-transform: uppercase; font-weight: 400; font-size: clamp(26px, 5vw, 84px); line-height: .98; overflow-wrap: break-word; }
-  .hero__price { text-align: right; }
-  .hero__amount { font-family: var(--display); font-stretch: 125%; font-weight: 400; font-size: clamp(24px, 2.4vw, 36px); }
-  .hero__emi { margin-top: 6px; font-size: 11px; letter-spacing: .14em; color: rgba(244, 245, 247,.55); }
-  @media (max-width: 600px) { .hero__price { text-align: left; } }
+  .top { display: flex; align-items: flex-end; justify-content: space-between; gap: 32px; flex-wrap: wrap; margin-top: 32px; padding-bottom: 32px; border-bottom: 1px solid var(--line); }
+  .top .eyebrow { letter-spacing: .34em; }
+  .title { margin: 14px 0 0; font-family: var(--display); font-stretch: 125%; text-transform: uppercase; font-weight: 400; font-size: clamp(30px, 5vw, 80px); line-height: .98; overflow-wrap: break-word; }
+  .price { text-align: right; }
+  .price__amount { font-family: var(--display); font-stretch: 125%; font-weight: 400; font-size: clamp(20px, 2.2vw, 32px); }
+  .price__emi { margin-top: 6px; font-size: 11px; letter-spacing: .14em; color: rgba(244, 245, 247,.55); }
+  @media (max-width: 600px) { .price { text-align: left; } }
 
-  .body { padding: 0 var(--gutter); }
-  .body__grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr)); gap: clamp(48px, 7vw, 110px); margin-top: 80px; }
-  .credit { margin: 40px 0 0; font-size: 11px; letter-spacing: .04em; color: rgba(244, 245, 247,.36); }
-  .credit a { color: rgba(244, 245, 247,.5); text-decoration: underline; text-decoration-color: rgba(244, 245, 247,.2); text-underline-offset: 3px; }
-  .credit a:hover { color: var(--accent); }
-  .blurb { margin: 0; font-weight: 300; font-size: clamp(20px, 1.7vw, 26px); line-height: 1.5; text-wrap: pretty; }
-  .specs { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0 36px; margin: 56px 0 0; }
+  .body { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: clamp(40px, 6vw, 96px); margin-top: 48px; align-items: start; }
+  @media (max-width: 900px) { .body { grid-template-columns: 1fr; } }
+
+  .viewer { position: relative; }
+  .viewer__track {
+    display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none;
+    aspect-ratio: 4 / 5; max-height: 78vh; background: var(--surface);
+  }
+  .viewer__track::-webkit-scrollbar { display: none; }
+  .viewer__slide { flex: 0 0 100%; scroll-snap-align: center; }
+  /* A few photos are square; contain keeps the whole car in frame. */
+  .viewer__slide img { width: 100%; height: 100%; object-fit: contain; display: block; }
+  .viewer__nav {
+    position: absolute; top: calc(50% - 40px); width: 48px; height: 48px; border: 1px solid rgba(244, 245, 247, .24);
+    background: rgba(0, 0, 0, .55); color: var(--ink); font-size: 26px; line-height: 1; cursor: pointer; transition: border-color .3s, opacity .3s;
+  }
+  .viewer__nav:hover { border-color: var(--ink); }
+  .viewer__nav:disabled { opacity: 0; pointer-events: none; }
+  .viewer__nav--prev { left: 14px; }
+  .viewer__nav--next { right: 14px; }
+  @media (pointer: coarse) { .viewer__nav { display: none; } }
+  .viewer__count { margin-top: 14px; }
+  .thumbs { display: flex; gap: 8px; margin-top: 14px; overflow-x: auto; scrollbar-width: none; }
+  .thumbs::-webkit-scrollbar { display: none; }
+  .thumb { flex: 0 0 64px; height: 80px; padding: 0; border: 1px solid transparent; background: var(--surface); cursor: pointer; opacity: .5; transition: opacity .3s, border-color .3s; }
+  .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .thumb:hover { opacity: .85; }
+  .thumb[aria-current='true'] { opacity: 1; border-color: var(--ink); }
+
+  .blurb { margin: 0 0 40px; font-weight: 300; font-size: clamp(18px, 1.6vw, 24px); line-height: 1.5; text-wrap: pretty; }
+  .specs { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0 36px; margin: 0; }
   .spec { padding: 20px 0; border-top: 1px solid var(--line); }
   .spec .label { letter-spacing: .28em; }
   .spec dd { margin: 10px 0 0; font-size: 16px; font-weight: 300; }
 
-  .panel { position: sticky; top: 120px; padding: 40px; border: 1px solid rgba(244, 245, 247,.12); background: #000; }
+  .panel { margin-top: 40px; padding: 36px; border: 1px solid rgba(244, 245, 247,.12); background: #000; }
   .panel .eyebrow { letter-spacing: .34em; }
-  .panel__btn { display: block; margin-top: 40px; padding: 18px; }
+  .panel__btn { display: block; margin-top: 28px; padding: 18px; }
   .panel__btn--alt { margin-top: 12px; border-color: rgba(244, 245, 247,.24); }
   @media (max-width: 600px) { .panel { padding: 28px 22px; } }
 
@@ -117,3 +149,38 @@ const credit = PHOTO_CREDITS[car.id];
   .related__all { font-size: 11px; font-weight: 500; letter-spacing: .24em; text-transform: uppercase; color: rgba(244, 245, 247,.65); white-space: nowrap; }
   .related__grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr)); gap: clamp(20px, 2.4vw, 36px); margin-top: 40px; }
 </style>
+
+<script>
+  const track = document.getElementById('viewer-track')!;
+  const prev = document.getElementById('viewer-prev') as HTMLButtonElement;
+  const next = document.getElementById('viewer-next') as HTMLButtonElement;
+  const count = document.getElementById('viewer-count')!;
+  const thumbs = [...document.querySelectorAll<HTMLButtonElement>('#viewer-thumbs .thumb')];
+  const total = thumbs.length;
+
+  const current = () => Math.round(track.scrollLeft / track.clientWidth);
+  const go = (i: number) => track.scrollTo({ left: Math.max(0, Math.min(total - 1, i)) * track.clientWidth, behavior: 'smooth' });
+
+  function update() {
+    const i = current();
+    count.textContent = `${i + 1} / ${total}`;
+    prev.disabled = i <= 0;
+    next.disabled = i >= total - 1;
+    thumbs.forEach((t, k) => (k === i ? t.setAttribute('aria-current', 'true') : t.removeAttribute('aria-current')));
+    // Keep the active thumbnail in view without scrolling the page itself.
+    const t = thumbs[i], strip = t?.parentElement;
+    if (t && strip) strip.scrollTo({ left: t.offsetLeft - strip.offsetLeft - (strip.clientWidth - t.clientWidth) / 2 });
+  }
+
+  track.addEventListener('scroll', update, { passive: true });
+  prev.addEventListener('click', () => go(current() - 1));
+  next.addEventListener('click', () => go(current() + 1));
+  thumbs.forEach((t, k) => t.addEventListener('click', () => go(k)));
+  track.tabIndex = 0;
+  track.setAttribute('aria-label', 'Photos');
+  track.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight') { e.preventDefault(); go(current() + 1); }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); go(current() - 1); }
+  });
+  update();
+</script>

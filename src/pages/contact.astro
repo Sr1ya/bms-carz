@@ -29,7 +29,7 @@ const DIRECTIONS = 'https://www.google.com/maps/dir/?api=1&destination=' +
         <div>
           <div class="label">Direct</div>
           <div class="text text--ink">
-            <a href="tel:+917947137079">+91 79 4713 7079</a><br />
+            <a href="tel:+919967777648">+91 99677 77648</a> · <a href="https://wa.me/919967777648" target="_blank" rel="noopener">WhatsApp</a><br />
             <a href="mailto:bmscarz@gmail.com">bmscarz@gmail.com</a>
           </div>
         </div>
@@ -79,13 +79,5 @@ const DIRECTIONS = 'https://www.google.com/maps/dir/?api=1&destination=' +
 
 <script>
   import { bindInlineForms } from '../scripts/forms';
-  import { CARS, carName } from '../data/cars';
-
-  // Prefill from "Book a test drive" on a car page.
-  const id = new URLSearchParams(location.search).get('car');
-  const car = CARS.find((c) => c.id === id);
-  const note = document.getElementById('c-note') as HTMLTextAreaElement;
-  if (car && !note.value) note.value = `Test drive — ${carName(car)}. `;
-
   bindInlineForms();
 </script>

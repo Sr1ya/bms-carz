@@ -107,6 +107,8 @@ const fullTitle = title ? `${title} — BMS Carz` : 'BMS Carz — Pre-Owned Luxu
           loader.classList.add('is-playing');
           setTimeout(() => {
             loader.classList.add('is-done');
+            // Drop it once the curtain has gone (~1.1s) so nothing of it lingers off-screen.
+            setTimeout(() => loader.remove(), 1300);
             root.classList.remove('is-loading');
             window.dispatchEvent(new Event('bms:intro-done'));
             enter();

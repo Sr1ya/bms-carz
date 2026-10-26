@@ -74,6 +74,7 @@ const carzPaths = paths(group('carz').body).map((p) => p.d);
 <style is:global>
   .loader {
     position: fixed; inset: 0; z-index: 100; display: none; place-items: center; background: var(--bg);
+    overflow: hidden; /* the logo shine sweeps past the screen edge */
   }
   .is-loading .loader, .loader.is-done { display: grid; }
   .is-loading body { overflow: hidden; }

@@ -23,10 +23,8 @@ const promises = [
       <div class="hero__media" data-hero-media>
         {hasVideo ? (
           <video muted loop playsinline preload="auto" poster="/video/hero-poster.jpg" aria-hidden="true">
-            <!-- Phones/tablets get a lighter 720p H.264 file (plays everywhere, incl. older iOS); desktops get 1080p. -->
-            <source src="/video/hero-720.mp4" type="video/mp4" media="(max-width: 1024px)" />
+            <!-- One 1080p WebM for every device. Browsers that can't play WebM show the poster. -->
             <source src="/video/hero.webm" type="video/webm" />
-            <source src="/video/hero-1080.mp4" type="video/mp4" />
           </video>
         ) : (
           <ImageSlot id="bms-hero" hint="Hero film — add public/video/hero.webm" eager />
@@ -125,7 +123,7 @@ const promises = [
     <h2 class="appt__title" data-reveal>See it in person in <span class="it">Kharghar.</span></h2>
     <div class="appt__ctas" data-reveal>
       <a href="/contact/" class="btn btn--solid">Book a viewing</a>
-      <a href="tel:+917947137079" class="btn btn--line">+91 79 4713 7079</a>
+      <a href="tel:+919967777648" class="btn btn--line">+91 99677 77648</a>
     </div>
   </section>
 </Base>

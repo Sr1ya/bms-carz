@@ -33,7 +33,7 @@ Featured cars are listed first, then the newest; the home page shows the first t
 
 The Sanity project is `5f3dmod9` (organization "BMS Carz"), and the 21 cars that were on the site have been imported. After changing the car form in `studio/schemaTypes/car.ts`, publish it with `npm run studio:deploy`.
 
-Still to do, once: make the site rebuild on publish. In Vercel, create a Deploy Hook (Settings → Git → Deploy Hooks, branch `main`). At sanity.io/manage → API → Webhooks, add a webhook with that URL, dataset `production`, triggers create, update and delete, filter `_type == "car"`.
+Publishing a car rebuilds the site: a Sanity webhook ("Rebuild website on car publish", sanity.io/manage → API → Webhooks) calls the Vercel deploy hook `sanity-publish` on the `bms-carz` project whenever a car is created, changed or deleted.
 
 The old copies of the stock, `src/data/local-stock.ts`, `public/stock/`, `scripts/stock-sizes.mjs` and `scripts/sanity-import.mjs`, are no longer shown by the site. They can be deleted together with the `fromDisk` fallback in `src/data/cars.ts`, which still imports the first of them.
 

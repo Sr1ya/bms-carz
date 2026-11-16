@@ -8,7 +8,7 @@ import Logo from './Logo.astro';
       <a href="/" class="footer__brand" aria-label="BMS Carz home">
         <Logo class="footer__logo" />
       </a>
-      <div class="footer__addr">Shop C3, Shah Arcade, Sector 6, Kharghar · Open daily, 8am–8pm</div>
+      <div class="footer__addr">Shop C1, C2 &amp; C3, Shah Arcade, Sector 6, Kharghar · Open daily, 8am–8pm</div>
     </div>
     <nav class="footer__nav" aria-label="Footer">
       <a href="/collection/">Collection</a>
@@ -29,7 +29,10 @@ import Logo from './Logo.astro';
   .footer__brand :global(.footer__logo) { display: block; height: 84px; width: auto; }
   .footer__addr { margin-top: 12px; font-size: 13px; font-weight: 300; color: rgba(244, 245, 247, .5); }
   .footer__nav { display: flex; gap: 32px; font-size: 11px; font-weight: 500; letter-spacing: .24em; text-transform: uppercase; }
-  .footer__nav a { color: rgba(244, 245, 247, .6); transition: color .4s; }
+  .footer__nav a { position: relative; padding: 6px 0; color: rgba(244, 245, 247, .6); transition: color .4s; }
+  .footer__nav a::after { content: ''; position: absolute; left: 0; right: .24em; bottom: 0; height: 1px; background: currentColor; transform: scaleX(0); transform-origin: right; transition: transform .5s var(--ease); }
+  .footer__nav a:hover::after { transform: scaleX(1); transform-origin: left; }
+  @media (prefers-reduced-motion: reduce) { .footer__nav a::after { transition: none; } }
   .footer__nav a:hover { color: var(--ink); }
   .footer__legal {
     margin-top: 56px; padding-top: 24px; border-top: 1px solid rgba(244, 245, 247, .06);

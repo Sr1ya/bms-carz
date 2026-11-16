@@ -27,7 +27,7 @@ const links = [
       <div class="nav__extra">
         <a href="/contact/" class="btn btn--solid">Book a viewing</a>
         <a href="tel:+919967777648" class="btn btn--line">Call +91 99677 77648</a>
-        <p class="nav__where">Shop C3, Shah Arcade, Sector 6, Kharghar<br />Open daily, 8am–8pm</p>
+        <p class="nav__where">Shop C1, C2 &amp; C3, Shah Arcade, Sector 6, Kharghar<br />Open daily, 8am–8pm</p>
       </div>
     </div>
     <a href="/contact/" class="nav__cta">Book a viewing</a>
@@ -57,6 +57,12 @@ const links = [
   .nav__links { display: flex; gap: clamp(14px, 2.6vw, 40px); }
   .nav__link { color: rgba(244, 245, 247, .7); transition: color .4s; }
   .nav__link:hover, .nav__link[aria-current] { color: var(--ink); }
+  /* Desktop: a hairline draws in under the link on hover, and stays under the current page. */
+  @media (min-width: 761px) {
+    .nav__link { position: relative; padding: 6px 0; }
+    .nav__link::after { content: ''; position: absolute; left: 0; right: .24em; bottom: 0; height: 1px; background: currentColor; transform: scaleX(0); transform-origin: right; transition: transform .5s var(--ease); }
+    .nav__link:hover::after, .nav__link[aria-current]::after { transform: scaleX(1); transform-origin: left; }
+  }
   .nav__cta { padding: 12px 22px; border: 1px solid rgba(244, 245, 247, .28); white-space: nowrap; transition: border-color .4s, background .4s, color .4s; }
   .nav__cta:hover { border-color: var(--ink); background: var(--ink); color: var(--bg); }
 
@@ -91,9 +97,19 @@ const links = [
       font-family: var(--display); font-stretch: 125%; font-size: 26px; font-weight: 400; letter-spacing: .02em; color: var(--ink);
     }
     .nav__link[aria-current] { color: var(--accent); }
+    /* The menu's links rise in one after another once the sheet is down. */
+    .nav__links .nav__link, .nav__extra { opacity: 0; transform: translateY(16px); transition: opacity .3s ease, transform .3s ease; }
+    .nav__links.is-open .nav__link, .nav__links.is-open .nav__extra { opacity: 1; transform: none; transition: opacity .6s ease, transform .8s var(--ease); }
+    .nav__links.is-open .nav__link:nth-child(1) { transition-delay: .18s; }
+    .nav__links.is-open .nav__link:nth-child(2) { transition-delay: .25s; }
+    .nav__links.is-open .nav__link:nth-child(3) { transition-delay: .32s; }
+    .nav__links.is-open .nav__extra { transition-delay: .42s; }
     .nav__extra { display: grid; gap: 12px; margin-top: 36px; letter-spacing: .2em; }
     .nav__extra .btn { padding: 17px; }
     .nav__where { margin: 18px 0 0; font-size: 13px; font-weight: 300; line-height: 1.7; letter-spacing: 0; text-transform: none; color: rgba(244, 245, 247, .55); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .nav__link::after, .nav__links .nav__link, .nav__extra { transition: none !important; }
   }
   /* Small phones: the menu carries "Book a viewing", so the header keeps just logo + menu. */
   @media (max-width: 480px) { .nav__cta { display: none; } }

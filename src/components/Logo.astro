@@ -1,6 +1,6 @@
 ---
-// Inlines public/images/bms-carz-logo-dark.svg. Its #111111 ink is swapped for
-// currentColor so the mark reads on the dark site; the stripes keep their colours.
+// Inlines public/images/bms-carz-logo-dark.svg. Its white ink is swapped for
+// currentColor so the mark follows the site ink; the badge, stripes and chrome keep their colours.
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
@@ -8,10 +8,18 @@ interface Props {
   class?: string;
 }
 
+const cls = Astro.props.class ?? '';
+// Each copy on the page gets its own gradient id, so one never depends on another's <defs>
+// (the intro loader's copy is hidden, then removed).
+const chromeId = `chrome-${cls.replace(/\W+/g, '-') || 'logo'}`;
+
 const svg = readFileSync(join(process.cwd(), 'public', 'images', 'bms-carz-logo-dark.svg'), 'utf8')
-  .replace(/#111111/gi, 'currentColor')
-  .replace(/\s(width|height)="[^"]*"/g, '')
-  .replace('<svg ', `<svg class="${Astro.props.class ?? ''}" role="img" aria-label="BMS Carz" focusable="false" `);
+  .replace(/#FFFFFF/gi, 'currentColor')
+  .replace(/<svg[^>]*>/, (tag) => tag.replace(/\s(width|height)="[^"]*"/g, ''))
+  .replace(/\sid="(car|badge|stripes|bms|carz)"/g, '')
+  .replace(/id="chrome"/g, `id="${chromeId}"`)
+  .replace(/url\(#chrome\)/g, `url(#${chromeId})`)
+  .replace('<svg ', `<svg class="${cls}" role="img" aria-label="BMS Carz" focusable="false" `);
 ---
 
 <Fragment set:html={svg} />

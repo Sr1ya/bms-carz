@@ -19,7 +19,7 @@ npm run preview   # serve the production build
 - `studio/project.json` — the Sanity project id and dataset, shared by the site, the Studio and the import script
 - `src/components/Loader.astro` — intro logo animation, generated from `public/images/bms-carz-logo-dark.svg`
 - `public/video/` — hero film (`hero.webm` for desktop, `hero-720.mp4` for phones/tablets, `hero-1080.mp4` fallback, `hero-poster.jpg`)
-- `public/images/` — logos, plus `bms-tradein.jpg` and `bms-about.jpg`
+- `public/images/` — logos, plus `bms-about.jpg`
 
 Forms currently confirm in place only; connect `src/scripts/forms.ts` to a form service to receive submissions.
 

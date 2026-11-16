@@ -13,7 +13,6 @@ const heroDim = 0.15;
 const promises = [
   ['I.', 'History verified', 'Service records, ownership and odometer checked against the source. No structural or flood damage, ever.'],
   ['II.', 'Priced in the open', 'One fair number on every listing. No negotiation theatre, no hidden handling fees.'],
-  ['III.', 'Covered after sale', 'Six months of engine and gearbox warranty included, extendable to twenty-four.'],
 ];
 ---
 
@@ -35,7 +34,7 @@ const promises = [
     <div class="hero__grad"></div>
     <div class="hero__dim" style={`opacity: ${heroDim}`}></div>
     <div class="hero__copy">
-      <div class="eyebrow hero__eyebrow" data-reveal data-hero-reveal>Navi Mumbai · Since 2011</div>
+      <div class="eyebrow hero__eyebrow" data-reveal data-hero-reveal>Navi Mumbai · 25+ years</div>
       <h1 class="hero__title">
         <span class="mask"><span data-line data-hero-reveal>Pre-owned.</span></span>
         <span class="mask"><span data-line data-hero-reveal class="it" style="transition-delay: .14s">Uncompromised.</span></span>
@@ -62,9 +61,8 @@ const promises = [
       Twenty-odd cars at a time. Each one we would <span class="it accent">keep ourselves.</span>
     </p>
     <div class="house__stats" data-reveal>
-      <div><div class="stat__n">15 yrs</div><div class="stat__k">In business</div></div>
+      <div><div class="stat__n">25+ yrs</div><div class="stat__k">In business</div></div>
       <div><div class="stat__n">3,400+</div><div class="stat__k">Cars delivered</div></div>
-      <div><div class="stat__n">6 mo</div><div class="stat__k">Warranty included</div></div>
     </div>
   </section>
 
@@ -85,7 +83,7 @@ const promises = [
     <div class="standard__grid">
       <div>
         <div class="eyebrow" data-reveal>Our standard</div>
-        <h2 class="standard__title" data-reveal>Three promises, <span class="it">every car.</span></h2>
+        <h2 class="standard__title" data-reveal>Two promises, <span class="it">every car.</span></h2>
       </div>
       <div class="standard__list">
         {promises.map(([n, title, body], i) => (
@@ -96,26 +94,6 @@ const promises = [
           </div>
         ))}
       </div>
-    </div>
-  </section>
-
-  <section class="trade">
-    <div class="trade__media">
-      <ImageSlot id="bms-tradein" hint="Trade-in — keys handover or car under showroom light" />
-    </div>
-    <div class="trade__copy">
-      <div class="eyebrow" data-reveal>Sell or trade</div>
-      <h2 class="trade__title" data-reveal>Your car, valued <span class="it">within the hour.</span></h2>
-      <p class="trade__lede" data-reveal>
-        One honest number, paid the same day — or carried straight into anything in the collection.
-      </p>
-      <form class="trade__form" data-reveal data-inline-form>
-        <label class="sr-only" for="trade-model">Make &amp; model</label>
-        <input id="trade-model" name="model" class="field" placeholder="Make & model" required />
-        <label class="sr-only" for="trade-year">Year &amp; kilometres</label>
-        <input id="trade-year" name="year" class="field" placeholder="Year & kilometres" required />
-        <button type="submit" class="btn btn--outline" data-sent="Request received">Request valuation</button>
-      </form>
     </div>
   </section>
 
@@ -199,7 +177,7 @@ const promises = [
   .house__quote { margin: 36px 0 0; max-width: 30ch; font-weight: 300; font-size: clamp(26px, 3vw, 44px); line-height: 1.25; letter-spacing: -.01em; text-wrap: balance; }
   .house__stats { display: flex; gap: clamp(32px, 7vw, 110px); margin-top: 72px; flex-wrap: wrap; justify-content: center; }
   @media (max-width: 600px) {
-    .house__stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; width: 100%; margin-top: 48px; }
+    .house__stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; width: 100%; margin-top: 48px; }
     .house__stats .stat__n { font-size: 22px; }
     .house__stats .stat__k { font-size: 9px; letter-spacing: .14em; line-height: 1.5; }
   }
@@ -218,16 +196,6 @@ const promises = [
   .promise__title { margin: 14px 0 10px; font-family: var(--display); font-stretch: 125%; text-transform: uppercase; font-weight: 500; font-size: 16px; letter-spacing: .02em; }
   .promise__body { margin: 0; font-size: 14px; font-weight: 300; line-height: 1.8; color: rgba(244, 245, 247,.62); text-wrap: pretty; }
   @media (max-width: 900px) { .standard__grid { grid-template-columns: 1fr; } }
-
-  .trade { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(340px, 100%), 1fr)); border-top: 1px solid rgba(244, 245, 247,.08); }
-  .trade__media { position: relative; min-height: 560px; background: var(--surface); overflow: hidden; }
-  .trade__copy { padding: clamp(48px, 7vw, 110px) clamp(24px, 5vw, 88px); display: flex; flex-direction: column; justify-content: center; }
-  .trade__title { margin: 20px 0 0; font-family: var(--display); font-stretch: 125%; text-transform: uppercase; font-weight: 400; font-size: clamp(26px, 2.8vw, 40px); line-height: 1.06; }
-  .trade__lede { margin: 24px 0 0; max-width: 42ch; font-size: 15px; font-weight: 300; line-height: 1.8; color: rgba(244, 245, 247,.62); text-wrap: pretty; }
-  .trade__form { display: grid; gap: 26px; margin-top: 44px; max-width: 460px; }
-  .trade__form .field { padding: 12px 0; font-size: 15px; }
-  .trade__form .btn { justify-self: start; margin-top: 8px; }
-  @media (max-width: 700px) { .trade__media { min-height: 360px; } }
 
   .appt { padding: clamp(120px, 15vw, 200px) var(--gutter); text-align: center; border-top: 1px solid rgba(244, 245, 247,.08); }
   .appt__title { margin: 26px auto 0; max-width: 18ch; font-family: var(--display); font-stretch: 125%; text-transform: uppercase; font-weight: 400; font-size: clamp(30px, 4.4vw, 72px); line-height: 1; text-wrap: balance; }

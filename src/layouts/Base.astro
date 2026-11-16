@@ -126,7 +126,7 @@ const fullTitle = title ? `${title} — BMS Carz` : 'BMS Carz — Pre-Owned Luxu
         else { img.addEventListener('load', done, { once: true }); img.addEventListener('error', done, { once: true }); }
       });
 
-      // Figures (15 yrs, 3,400+, 4.9) count up from zero the first time they scroll into view.
+      // Figures (25+ yrs, 3,400+, 4.9) count up from zero the first time they scroll into view.
       if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
         const counter = new IntersectionObserver((entries) => entries.forEach((e) => {
           if (!e.isIntersecting) return;

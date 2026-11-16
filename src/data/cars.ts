@@ -1,4 +1,17 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import sanity from '../../sanity.json';
+import { STOCK } from './local-stock.ts';
+
 export type Category = 'Sedan' | 'SUV' | 'Hatchback';
+
+export interface Photo {
+  src: string;
+  width: number;
+  height: number;
+  /** On Sanity's image CDN (resized by URL) rather than a file in public/stock/. */
+  remote: boolean;
+}
 
 export interface Car {
   id: string;
@@ -6,8 +19,8 @@ export interface Car {
   model: string;
   colour: string;
   cat: Category;
-  /** Number of photos in public/stock/<id>/ (01.webp, 02.webp, …). */
-  photos: number;
+  /** At least one; the first is the cover. */
+  photos: Photo[];
   year?: number;
   /** Lakhs, or crores when unit is "cr". Leave out to show "Price on request". */
   price?: number;
@@ -19,31 +32,63 @@ export interface Car {
   specs?: [string, string][];
 }
 
-// Current stock. Make, model and colour were read off the photos; add year, price, kms,
-// fuel and gearbox per car as they're confirmed, and they appear on the site automatically.
-export const CARS: Car[] = [
-  { id: 'audi-a3-black', make: 'Audi', model: 'A3', colour: 'Black', cat: 'Sedan', photos: 9 },
-  { id: 'mercedes-c-class-black', make: 'Mercedes-Benz', model: 'C-Class', colour: 'Black', cat: 'Sedan', photos: 8 },
-  { id: 'mercedes-s-class-white', make: 'Mercedes-Benz', model: 'S-Class', colour: 'White', cat: 'Sedan', photos: 8 },
-  { id: 'mercedes-gle-silver', make: 'Mercedes-Benz', model: 'GLE', colour: 'Silver', cat: 'SUV', photos: 8 },
-  { id: 'mercedes-e-class-brown', make: 'Mercedes-Benz', model: 'E-Class', colour: 'Brown', cat: 'Sedan', photos: 7 },
-  { id: 'jeep-wrangler-red', make: 'Jeep', model: 'Wrangler', colour: 'Red', cat: 'SUV', photos: 8 },
-  { id: 'mini-cooper-red', make: 'Mini', model: 'Cooper', colour: 'Red', cat: 'Hatchback', photos: 8 },
-  { id: 'mercedes-ml-white', make: 'Mercedes-Benz', model: 'ML', colour: 'White', cat: 'SUV', photos: 10 },
-  { id: 'bmw-5-series-black', make: 'BMW', model: '5 Series', colour: 'Black', cat: 'Sedan', photos: 10 },
-  { id: 'mercedes-gl-white', make: 'Mercedes-Benz', model: 'GL', colour: 'White', cat: 'SUV', photos: 10 },
-  { id: 'bmw-1-series-red', make: 'BMW', model: '1 Series', colour: 'Red', cat: 'Hatchback', photos: 9 },
-  { id: 'mini-countryman-green', make: 'Mini', model: 'Countryman', colour: 'Green', cat: 'SUV', photos: 10 },
-  { id: 'volvo-xc90-white', make: 'Volvo', model: 'XC90', colour: 'White', cat: 'SUV', photos: 9 },
-  { id: 'volvo-s90-silver', make: 'Volvo', model: 'S90', colour: 'Silver', cat: 'Sedan', photos: 6 },
-  { id: 'porsche-cayenne-grey', make: 'Porsche', model: 'Cayenne', colour: 'Grey', cat: 'SUV', photos: 10 },
-  { id: 'mercedes-e-class-white', make: 'Mercedes-Benz', model: 'E-Class', colour: 'White', cat: 'Sedan', photos: 10 },
-  { id: 'porsche-panamera-black', make: 'Porsche', model: 'Panamera', colour: 'Black', cat: 'Sedan', photos: 10 },
-  { id: 'bmw-x5-white', make: 'BMW', model: 'X5', colour: 'White', cat: 'SUV', photos: 10 },
-  { id: 'mercedes-gl-black', make: 'Mercedes-Benz', model: 'GL', colour: 'Black', cat: 'SUV', photos: 10 },
-  { id: 'mercedes-ml-black', make: 'Mercedes-Benz', model: 'ML', colour: 'Black', cat: 'SUV', photos: 10 },
-  { id: 'mini-cooper-s-red', make: 'Mini', model: 'Cooper S', colour: 'Red', cat: 'Hatchback', photos: 10 },
-];
+// The cars are edited in Sanity (see studio/ and the README) and fetched here when the site builds.
+// Featured cars come first, then newest first; the home page shows the first three.
+const QUERY = `*[_type == "car" && defined(slug.current) && count(photos[defined(asset)]) > 0]
+  | order(coalesce(featured, false) desc, _createdAt desc) {
+    "id": slug.current, make, model, colour, "cat": category, year, price, kms, fuel, gearbox, blurb,
+    "specs": specs[]{ label, value },
+    "photos": photos[defined(asset)]{
+      "src": asset->url,
+      "width": asset->metadata.dimensions.width,
+      "height": asset->metadata.dimensions.height
+    }
+  }`;
+
+interface SanityCar extends Omit<Car, 'photos' | 'specs' | 'unit'> {
+  photos: Omit<Photo, 'remote'>[];
+  specs?: { label?: string; value?: string }[];
+}
+
+async function fromSanity(): Promise<Car[]> {
+  // api.sanity.io, not the cached apicdn: a build started by a publish must see that publish.
+  const url = `https://${sanity.projectId}.api.sanity.io/v2025-02-19/data/query/${sanity.dataset}?perspective=published&query=${encodeURIComponent(QUERY)}`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`Could not load the cars from Sanity: ${res.status} ${await res.text()}`);
+  const { result } = (await res.json()) as { result: SanityCar[] };
+  return result.map(({ price, specs, photos, ...car }) => {
+    // Editors set the price in lakhs; drop empty values so the pages' "is it known?" checks hold.
+    const known = Object.fromEntries(Object.entries(car).filter(([, v]) => v != null && v !== '')) as typeof car;
+    return {
+      ...known,
+      ...(price == null ? {} : price >= 100 ? { price: price / 100, unit: 'cr' as const } : { price }),
+      specs: specs?.filter((s) => s.label && s.value).map((s) => [s.label!, s.value!] as [string, string]),
+      photos: photos.map((p) => ({ ...p, remote: true })),
+    };
+  });
+}
+
+/** Width and height of a WebP, read from its header (lossy, lossless or extended). */
+function webpSize(file: string): [number, number] {
+  const b = readFileSync(file);
+  const kind = b.toString('ascii', 12, 16);
+  if (kind === 'VP8 ') return [b.readUInt16LE(26) & 0x3fff, b.readUInt16LE(28) & 0x3fff];
+  if (kind === 'VP8L') { const n = b.readUInt32LE(21); return [(n & 0x3fff) + 1, ((n >> 14) & 0x3fff) + 1]; }
+  return [b.readUIntLE(24, 3) + 1, b.readUIntLE(27, 3) + 1];
+}
+
+/** The pre-Sanity stock in public/stock/, used until sanity.json names a project. */
+const fromDisk = (): Car[] =>
+  STOCK.map((car) => ({
+    ...car,
+    photos: Array.from({ length: car.photos }, (_, i) => {
+      const src = `/stock/${car.id}/${String(i + 1).padStart(2, '0')}.webp`;
+      const [width, height] = webpSize(join(process.cwd(), 'public', src));
+      return { src, width, height, remote: false };
+    }),
+  }));
+
+export const CARS: Car[] = sanity.projectId ? await fromSanity() : fromDisk();
 
 export const CATEGORIES = ['All', 'Sedan', 'SUV', 'Hatchback'] as const;
 
@@ -64,12 +109,22 @@ export function emi(c: Car) {
 
 export const carName = (c: Car) => [c.year, c.make, c.model].filter(Boolean).join(' ');
 
-export const photo = (c: Car, n = 1) => `/stock/${c.id}/${String(n).padStart(2, '0')}.webp`;
-/** Smaller copies made by scripts/stock-sizes.mjs: 720 or 400px wide, or 160px for thumbnails. */
-export const photoAt = (c: Car, n: number, w: 720 | 400 | 160) => `/stock/${c.id}/${w}/${String(n).padStart(2, '0')}.webp`;
-/** srcset for a photo: the smaller copies plus the original (pass its real width when known). */
-export const photoSrcset = (c: Car, n = 1, full = 1080) =>
-  `${photoAt(c, n, 400)} 400w, ${photoAt(c, n, 720)} 720w, ${photo(c, n)} ${full}w`;
+const pic = (c: Car, n: number) => c.photos[n - 1];
+/** Sanity's image CDN resizes on request and never enlarges; it serves WebP/AVIF where the browser takes it. */
+const cdn = (p: Photo, w: number, q = 75) => `${p.src}?w=${w}&fit=max&q=${q}&auto=format`;
+const FULL = 1600;
+
+/** The nth photo (from 1) at full size. */
+export const photo = (c: Car, n = 1) => (pic(c, n).remote ? cdn(pic(c, n), FULL) : pic(c, n).src);
+/** A smaller copy: 720 or 400px wide, or 160px for thumbnails. */
+export const photoAt = (c: Car, n: number, w: 720 | 400 | 160) => {
+  const p = pic(c, n);
+  // Local stock: copies made by scripts/stock-sizes.mjs in public/stock/<id>/<w>/.
+  return p.remote ? cdn(p, w, w > 200 ? 75 : 60) : p.src.replace(/\/([^/]+)$/, `/${w}/$1`);
+};
+/** srcset for a photo: the smaller copies plus the full size. */
+export const photoSrcset = (c: Car, n = 1) =>
+  `${photoAt(c, n, 400)} 400w, ${photoAt(c, n, 720)} 720w, ${photo(c, n)} ${Math.min(pic(c, n).width, FULL)}w`;
 
 /** The card/spec line: whichever of kms, fuel and gearbox are known, else colour and body. */
 export const summary = (c: Car) => {

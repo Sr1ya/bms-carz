@@ -1,18 +1,7 @@
 ---
 import Base from '../../layouts/Base.astro';
 import CarCard from '../../components/CarCard.astro';
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
 import { CARS, type Car, money, emi, carName, photo, photoAt, photoSrcset } from '../../data/cars';
-
-/** Width and height of a WebP, read from its header (lossy, lossless or extended). */
-function webpSize(file: string): [number, number] {
-  const b = readFileSync(file);
-  const kind = b.toString('ascii', 12, 16);
-  if (kind === 'VP8 ') return [b.readUInt16LE(26) & 0x3fff, b.readUInt16LE(28) & 0x3fff];
-  if (kind === 'VP8L') { const n = b.readUInt32LE(21); return [(n & 0x3fff) + 1, ((n >> 14) & 0x3fff) + 1]; }
-  return [b.readUIntLE(24, 3) + 1, b.readUIntLE(27, 3) + 1];
-}
 
 export function getStaticPaths() {
   return CARS.map((car) => ({ params: { id: car.id }, props: { car } }));
@@ -22,9 +11,9 @@ const { car } = Astro.props as { car: Car };
 const related = CARS.filter((c) => c.id !== car.id && c.cat === car.cat).slice(0, 3);
 const monthly = emi(car);
 const whatsapp = `https://wa.me/919967777648?text=${encodeURIComponent(`Hi BMS Carz, I'm interested in the ${carName(car)} (${car.colour}).`)}`;
-const shots = Array.from({ length: car.photos }, (_, i) => photo(car, i + 1));
-// Each car's set is all portrait (4:5) or all square, so the viewer takes the first photo's shape.
-const [pw, ph] = webpSize(join(process.cwd(), 'public', shots[0]));
+const shots = car.photos.map((_, i) => photo(car, i + 1));
+// The viewer takes the first photo's shape; photos of another shape sit whole inside it.
+const { width: pw, height: ph } = car.photos[0];
 const specs: [string, string][] = [
   ['Colour', car.colour],
   ['Body', car.cat],
@@ -57,7 +46,7 @@ const specs: [string, string][] = [
           <div class="strip">
             {shots.map((src, i) => (
               <div class="slide">
-                <img src={src} srcset={photoSrcset(car, i + 1, pw)} sizes={`(max-width: 900px) calc(100vw - 40px), min(55vw, ${Math.round(78 * pw / ph)}vh)`} alt={`${carName(car)}, photo ${i + 1} of ${shots.length}`} width={pw} height={ph}
+                <img src={src} srcset={photoSrcset(car, i + 1)} sizes={`(max-width: 900px) calc(100vw - 40px), min(55vw, ${Math.round(78 * pw / ph)}vh)`} alt={`${carName(car)}, photo ${i + 1} of ${shots.length}`} width={pw} height={ph}
                   loading={i === 0 ? 'eager' : 'lazy'} decoding="async" fetchpriority={i === 0 ? 'high' : 'low'} draggable="false" />
               </div>
             ))}

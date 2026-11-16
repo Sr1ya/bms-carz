@@ -39,6 +39,6 @@ The Sanity project is `5f3dmod9` (organization "BMS Carz"), and the 21 cars that
 
 Publishing a car rebuilds the site: a Sanity webhook ("Rebuild website on car publish", sanity.io/manage → API → Webhooks) calls the Vercel deploy hook `sanity-publish` on the `bms-carz` project whenever a car, brand or body type is created, changed or deleted.
 
-The About page's photo is also edited in the Studio ("About page" in the sidebar); set its hotspot to choose what stays in view in the tall frame.
+The About page's photo is also edited in the Studio ("About page" in the sidebar); it is shown whole, uncropped.
 
 `npm run studio` runs the Studio locally at http://localhost:3333.

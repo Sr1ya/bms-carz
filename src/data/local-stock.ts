@@ -11,7 +11,7 @@ export interface StockCar {
 }
 
 // The stock as it was before the cars moved to Sanity. The site shows this list only while
-// sanity.json has no projectId, and scripts/sanity-import.mjs uploads it to Sanity.
+// studio/project.json has no projectId, and scripts/sanity-import.mjs uploads it to Sanity.
 // Once the cars are in Sanity, this file and public/stock/ can be deleted.
 export const STOCK: StockCar[] = [
   { id: 'audi-a3-black', make: 'Audi', model: 'A3', colour: 'Black', cat: 'Sedan', photos: 9 },

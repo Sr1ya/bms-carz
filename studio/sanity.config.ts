@@ -1,6 +1,6 @@
 import { defineConfig } from 'sanity';
 import { structureTool } from 'sanity/structure';
-import project from '../sanity.json';
+import project from './project.json';
 import { car } from './schemaTypes/car';
 
 export default defineConfig({

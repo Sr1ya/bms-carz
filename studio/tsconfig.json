@@ -6,11 +6,12 @@
     "moduleResolution": "Bundler",
     "jsx": "preserve",
     "strict": true,
+    "allowJs": true,
     "noEmit": true,
     "skipLibCheck": true,
     "resolveJsonModule": true,
     "isolatedModules": true
   },
-  "include": ["**/*.ts", "**/*.tsx"],
+  "include": ["**/*", ".sanity/**/*"],
   "exclude": ["node_modules", "dist"]
 }

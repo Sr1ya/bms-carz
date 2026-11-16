@@ -16,7 +16,7 @@ npm run preview   # serve the production build
 - `src/pages/` — home, collection, car detail (`cars/[id].astro`), about, contact
 - `src/data/cars.ts` — loads the cars from Sanity when the site builds (see below)
 - `studio/` — the Sanity Studio: the admin where cars are added and edited
-- `sanity.json` — the Sanity project id and dataset, shared by the site, the Studio and the import script
+- `studio/project.json` — the Sanity project id and dataset, shared by the site, the Studio and the import script
 - `src/components/Loader.astro` — intro logo animation, generated from `public/images/bms-carz-logo-dark.svg`
 - `public/video/` — hero film (`hero.webm` for desktop, `hero-720.mp4` for phones/tablets, `hero-1080.mp4` fallback, `hero-poster.jpg`)
 - `public/images/` — logos, plus `bms-tradein.jpg` and `bms-about.jpg`

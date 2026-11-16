@@ -6,9 +6,9 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { STOCK } from '../src/data/local-stock.ts';
 
-const { projectId, dataset } = JSON.parse(readFileSync(join(process.cwd(), 'sanity.json'), 'utf8'));
+const { projectId, dataset } = JSON.parse(readFileSync(join(process.cwd(), 'studio', 'project.json'), 'utf8'));
 const token = process.env.SANITY_WRITE_TOKEN;
-if (!projectId) throw new Error('Set "projectId" in sanity.json first.');
+if (!projectId) throw new Error('Set "projectId" in studio/project.json first.');
 if (!token) throw new Error('Set SANITY_WRITE_TOKEN to a token with Editor rights (sanity.io/manage → API → Tokens).');
 
 const api = `https://${projectId}.api.sanity.io/v2025-02-19`;

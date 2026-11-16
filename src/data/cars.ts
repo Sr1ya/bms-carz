@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import sanity from '../../sanity.json';
+import sanity from '../../studio/project.json';
 import { STOCK } from './local-stock.ts';
 
 export type Category = 'Sedan' | 'SUV' | 'Hatchback';
@@ -77,7 +77,7 @@ function webpSize(file: string): [number, number] {
   return [b.readUIntLE(24, 3) + 1, b.readUIntLE(27, 3) + 1];
 }
 
-/** The pre-Sanity stock in public/stock/, used until sanity.json names a project. */
+/** The pre-Sanity stock in public/stock/, used until studio/project.json names a project. */
 const fromDisk = (): Car[] =>
   STOCK.map((car) => ({
     ...car,

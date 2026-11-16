@@ -12,17 +12,28 @@ const priced = CARS.some((c) => c.price !== undefined);
     <div class="eyebrow" data-reveal>The collection</div>
     <div class="head">
       <h1 class="page-title head__title" data-reveal><span id="count">{CARS.length}</span> <span id="noun">{CARS.length === 1 ? 'car' : 'cars'}</span>, <span class="it">hand-picked.</span></h1>
-      {priced && <button type="button" class="sort" id="sort" data-reveal>Sort — <span id="sort-label">Featured</span></button>}
-    </div>
-    <!-- Two filters that combine: a brand and a body type. Both lists come from the cars in Sanity. -->
-    {[['brand', 'Brand', BRANDS], ['body', 'Body type', BODY_TYPES]].map(([key, title, options]) => (
-      <div class="filters" role="group" aria-label={`Filter by ${(title as string).toLowerCase()}`}>
-        <span class="filters__title">{title}</span>
-        {['All', ...(options as string[])].map((label, i) => (
-          <button type="button" class="filter" data-filter={key} data-value={label} aria-pressed={i === 0 ? 'true' : 'false'}>{label}</button>
-        ))}
+      <div class="tools" data-reveal>
+        <button type="button" class="tool" id="filter-toggle" aria-expanded="false" aria-controls="filter-panel">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true">
+            <path d="M3 7h11M18 7h3M3 17h3M10 17h11" /><circle cx="16" cy="7" r="2" /><circle cx="8" cy="17" r="2" />
+          </svg>
+          Filter<span class="tool__n" id="filter-n" hidden></span>
+        </button>
+        {priced && <button type="button" class="tool" id="sort">Sort — <span id="sort-label">Featured</span></button>}
       </div>
-    ))}
+    </div>
+    <!-- Behind the Filter button: a brand and a body type, which combine. Both lists come from the cars in Sanity. -->
+    <div class="panel" id="filter-panel" hidden>
+      {[['brand', 'Brand', BRANDS], ['body', 'Body type', BODY_TYPES]].map(([key, title, options]) => (
+        <div class="filters" role="group" aria-label={`Filter by ${(title as string).toLowerCase()}`}>
+          <span class="filters__title">{title}</span>
+          {['All', ...(options as string[])].map((label, i) => (
+            <button type="button" class="filter" data-filter={key} data-value={label} aria-pressed={i === 0 ? 'true' : 'false'}>{label}</button>
+          ))}
+        </div>
+      ))}
+      <button type="button" class="panel__clear" id="clear" hidden>Clear filters</button>
+    </div>
     <p class="empty" id="empty" hidden>No cars match both filters right now. <button type="button" class="empty__reset" id="reset">Show all cars</button></p>
     <div class="grid" id="grid">
       {CARS.map((car, i) => <CarCard car={car} index={i} />)}
@@ -33,10 +44,18 @@ const priced = CARS.some((c) => c.price !== undefined);
 <style>
   .head { display: flex; align-items: flex-end; justify-content: space-between; gap: 32px; flex-wrap: wrap; margin-top: 20px; padding-bottom: 32px; border-bottom: 1px solid var(--line); }
   .head__title { margin: 0; }
-  .sort, .filter { background: none; border: 0; padding: 0; font-size: 11px; font-weight: 500; letter-spacing: .24em; text-transform: uppercase; cursor: pointer; }
-  .sort { color: rgba(244, 245, 247,.7); transition: color .4s; }
-  .sort:hover { color: var(--ink); }
-  .filters { display: flex; align-items: baseline; gap: 6px 36px; flex-wrap: wrap; margin-top: 28px; }
+  .tools { display: flex; align-items: center; gap: 32px; }
+  .tool, .filter, .panel__clear { background: none; border: 0; padding: 0; font-size: 11px; font-weight: 500; letter-spacing: .24em; text-transform: uppercase; cursor: pointer; }
+  .tool { display: inline-flex; align-items: center; gap: 10px; padding: 8px 0; color: rgba(244, 245, 247,.7); transition: color .4s; }
+  .tool:hover, .tool[aria-expanded='true'] { color: var(--ink); }
+  .tool__n { display: grid; place-items: center; min-width: 18px; height: 18px; border-radius: 9px; background: var(--accent); color: #fff; font-size: 10px; letter-spacing: 0; }
+  .tool__n[hidden] { display: none; }
+  .panel { padding: 8px 0 28px; border-bottom: 1px solid var(--line); }
+  .panel[hidden] { display: none; }
+  .panel__clear { margin-top: 22px; color: rgba(244, 245, 247,.7); text-decoration: underline; text-underline-offset: 5px; transition: color .4s; }
+  .panel__clear:hover { color: var(--ink); }
+  .panel__clear[hidden] { display: none; }
+  .filters { display: flex; align-items: baseline; gap: 6px 36px; flex-wrap: wrap; margin-top: 20px; }
   .filters + .filters { margin-top: 14px; }
   .filters__title { flex: 0 0 110px; font-size: 10px; font-weight: 500; letter-spacing: .3em; text-transform: uppercase; color: rgba(244, 245, 247,.36); }
   .empty { margin: 56px 0 0; font-size: 15px; font-weight: 300; color: rgba(244, 245, 247,.62); }
@@ -53,6 +72,7 @@ const priced = CARS.some((c) => c.price !== undefined);
     .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 36px 12px; margin-top: 32px; }
     .filters { gap: 4px 22px; }
     .filters__title { flex-basis: 100%; }
+    .tools { gap: 24px; }
     .head { padding-bottom: 24px; }
   }
 </style>
@@ -65,6 +85,10 @@ const priced = CARS.some((c) => c.price !== undefined);
   const sortLabel = document.getElementById('sort-label');
   const filters = [...document.querySelectorAll<HTMLButtonElement>('[data-filter]')];
   const empty = document.getElementById('empty')!;
+  const toggle = document.getElementById('filter-toggle')!;
+  const panel = document.getElementById('filter-panel')!;
+  const badge = document.getElementById('filter-n')!;
+  const clear = document.getElementById('clear')!;
 
   const SORTS = ['featured', 'low', 'high'] as const;
   const LABELS = { featured: 'Featured', low: 'Price, low to high', high: 'Price, high to low' };
@@ -98,6 +122,10 @@ const priced = CARS.some((c) => c.price !== undefined);
     document.getElementById('noun')!.textContent = shown === 1 ? 'car' : 'cars';
     if (sortLabel) sortLabel.textContent = LABELS[sort];
     empty.hidden = shown > 0;
+    // The button shows how many filters are on, so a closed panel never hides why the list is short.
+    const active = KEYS.filter((k) => chosen[k] !== 'All').length;
+    badge.textContent = String(active);
+    badge.hidden = clear.hidden = active === 0;
     filters.forEach((f) => f.setAttribute('aria-pressed', String(chosen[f.dataset.filter as 'brand' | 'body'] === f.dataset.value)));
     window.dispatchEvent(new Event('bms:rescan'));
   }
@@ -114,6 +142,14 @@ const priced = CARS.some((c) => c.price !== undefined);
     render();
   };
   filters.forEach((f) => f.addEventListener('click', () => choose({ [f.dataset.filter!]: f.dataset.value! })));
-  document.getElementById('reset')!.addEventListener('click', () => choose({ brand: 'All', body: 'All' }));
-  if (KEYS.some((k) => chosen[k] !== 'All')) render();
+  const reset = () => choose({ brand: 'All', body: 'All' });
+  document.getElementById('reset')!.addEventListener('click', reset);
+  clear.addEventListener('click', reset);
+  toggle.addEventListener('click', () => {
+    const open = panel.hidden;
+    panel.hidden = !open;
+    toggle.setAttribute('aria-expanded', String(open));
+  });
+  // Arriving on a filtered link: apply it, and open the panel so the choice is visible.
+  if (KEYS.some((k) => chosen[k] !== 'All')) { render(); toggle.click(); }
 </script>

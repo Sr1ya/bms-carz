@@ -1,24 +1,19 @@
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
 import sanity from '../../studio/project.json';
-import { STOCK } from './local-stock.ts';
-
-export type Category = 'Sedan' | 'SUV' | 'Hatchback';
 
 export interface Photo {
   src: string;
   width: number;
   height: number;
-  /** On Sanity's image CDN (resized by URL) rather than a file in public/stock/. */
-  remote: boolean;
 }
 
 export interface Car {
   id: string;
+  /** The brand's name, e.g. Mercedes-Benz. Brands and body types are their own lists in Sanity. */
   make: string;
   model: string;
   colour: string;
-  cat: Category;
+  /** The body type's name, e.g. SUV. */
+  cat: string;
   /** At least one; the first is the cover. */
   photos: Photo[];
   year?: number;
@@ -34,9 +29,9 @@ export interface Car {
 
 // The cars are edited in Sanity (see studio/ and the README) and fetched here when the site builds.
 // Featured cars come first, then newest first; the home page shows the first three.
-const QUERY = `*[_type == "car" && defined(slug.current) && count(photos[defined(asset)]) > 0]
+const QUERY = `*[_type == "car" && defined(slug.current) && defined(brand->name) && defined(bodyType->name) && count(photos[defined(asset)]) > 0]
   | order(coalesce(featured, false) desc, _createdAt desc) {
-    "id": slug.current, make, model, colour, "cat": category, year, price, kms, fuel, gearbox, blurb,
+    "id": slug.current, "make": brand->name, model, colour, "cat": bodyType->name, year, price, kms, fuel, gearbox, blurb,
     "specs": specs[]{ label, value },
     "photos": photos[defined(asset)]{
       "src": asset->url,
@@ -45,8 +40,7 @@ const QUERY = `*[_type == "car" && defined(slug.current) && count(photos[defined
     }
   }`;
 
-interface SanityCar extends Omit<Car, 'photos' | 'specs' | 'unit'> {
-  photos: Omit<Photo, 'remote'>[];
+interface SanityCar extends Omit<Car, 'specs' | 'unit'> {
   specs?: { label?: string; value?: string }[];
 }
 
@@ -56,41 +50,25 @@ async function fromSanity(): Promise<Car[]> {
   const res = await fetch(url);
   if (!res.ok) throw new Error(`Could not load the cars from Sanity: ${res.status} ${await res.text()}`);
   const { result } = (await res.json()) as { result: SanityCar[] };
-  return result.map(({ price, specs, photos, ...car }) => {
+  return result.map(({ price, specs, ...car }) => {
     // Editors set the price in lakhs; drop empty values so the pages' "is it known?" checks hold.
     const known = Object.fromEntries(Object.entries(car).filter(([, v]) => v != null && v !== '')) as typeof car;
     return {
       ...known,
       ...(price == null ? {} : price >= 100 ? { price: price / 100, unit: 'cr' as const } : { price }),
       specs: specs?.filter((s) => s.label && s.value).map((s) => [s.label!, s.value!] as [string, string]),
-      photos: photos.map((p) => ({ ...p, remote: true })),
     };
   });
 }
 
-/** Width and height of a WebP, read from its header (lossy, lossless or extended). */
-function webpSize(file: string): [number, number] {
-  const b = readFileSync(file);
-  const kind = b.toString('ascii', 12, 16);
-  if (kind === 'VP8 ') return [b.readUInt16LE(26) & 0x3fff, b.readUInt16LE(28) & 0x3fff];
-  if (kind === 'VP8L') { const n = b.readUInt32LE(21); return [(n & 0x3fff) + 1, ((n >> 14) & 0x3fff) + 1]; }
-  return [b.readUIntLE(24, 3) + 1, b.readUIntLE(27, 3) + 1];
-}
+if (!sanity.projectId) throw new Error('studio/project.json has no projectId, so there are no cars to load.');
 
-/** The pre-Sanity stock in public/stock/, used until studio/project.json names a project. */
-const fromDisk = (): Car[] =>
-  STOCK.map((car) => ({
-    ...car,
-    photos: Array.from({ length: car.photos }, (_, i) => {
-      const src = `/stock/${car.id}/${String(i + 1).padStart(2, '0')}.webp`;
-      const [width, height] = webpSize(join(process.cwd(), 'public', src));
-      return { src, width, height, remote: false };
-    }),
-  }));
+export const CARS: Car[] = await fromSanity();
 
-export const CARS: Car[] = sanity.projectId ? await fromSanity() : fromDisk();
-
-export const CATEGORIES = ['All', 'Sedan', 'SUV', 'Hatchback'] as const;
+/** The brands and body types that have cars right now, A to Z: the collection page's filters. */
+const names = (pick: (c: Car) => string) => [...new Set(CARS.map(pick))].sort((a, b) => a.localeCompare(b));
+export const BRANDS = names((c) => c.make);
+export const BODY_TYPES = names((c) => c.cat);
 
 export const lakhs = (c: Car) => (c.price === undefined ? undefined : c.unit === 'cr' ? c.price * 100 : c.price);
 
@@ -115,13 +93,9 @@ const cdn = (p: Photo, w: number, q = 75) => `${p.src}?w=${w}&fit=max&q=${q}&aut
 const FULL = 1600;
 
 /** The nth photo (from 1) at full size. */
-export const photo = (c: Car, n = 1) => (pic(c, n).remote ? cdn(pic(c, n), FULL) : pic(c, n).src);
+export const photo = (c: Car, n = 1) => cdn(pic(c, n), FULL);
 /** A smaller copy: 720 or 400px wide, or 160px for thumbnails. */
-export const photoAt = (c: Car, n: number, w: 720 | 400 | 160) => {
-  const p = pic(c, n);
-  // Local stock: copies made by scripts/stock-sizes.mjs in public/stock/<id>/<w>/.
-  return p.remote ? cdn(p, w, w > 200 ? 75 : 60) : p.src.replace(/\/([^/]+)$/, `/${w}/$1`);
-};
+export const photoAt = (c: Car, n: number, w: 720 | 400 | 160) => cdn(pic(c, n), w, w > 200 ? 75 : 60);
 /** srcset for a photo: the smaller copies plus the full size. */
 export const photoSrcset = (c: Car, n = 1) =>
   `${photoAt(c, n, 400)} 400w, ${photoAt(c, n, 720)} 720w, ${photo(c, n)} ${Math.min(pic(c, n).width, FULL)}w`;

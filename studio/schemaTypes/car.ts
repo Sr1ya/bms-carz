@@ -1,12 +1,21 @@
 import { defineArrayMember, defineField, defineType } from 'sanity';
 
 // One document per car. The website reads these fields in src/data/cars.ts.
+// Brand and body type are links to the lists in ./lists.ts, so the website's filters use one spelling.
 export const car = defineType({
   name: 'car',
   title: 'Car',
   type: 'document',
   fields: [
-    defineField({ name: 'make', title: 'Make', type: 'string', description: 'e.g. Mercedes-Benz', validation: (r) => r.required() }),
+    defineField({
+      name: 'brand',
+      title: 'Brand',
+      type: 'reference',
+      to: [{ type: 'brand' }],
+      description: 'Pick the brand, or create a new one from this box. Visitors can filter the collection by brand.',
+      options: { disableNew: false },
+      validation: (r) => r.required(),
+    }),
     defineField({ name: 'model', title: 'Model', type: 'string', description: 'e.g. E-Class', validation: (r) => r.required() }),
     defineField({ name: 'colour', title: 'Colour', type: 'string', validation: (r) => r.required() }),
     defineField({
@@ -15,16 +24,22 @@ export const car = defineType({
       type: 'slug',
       description: 'The end of the car\'s page address, e.g. mercedes-e-class-white. Press Generate; don\'t change it once the car is live.',
       options: {
-        source: (doc) => [doc.make, doc.model, doc.colour].filter(Boolean).join(' '),
+        // The brand is a link to another document, so look its name up.
+        source: async (doc, { getClient }) => {
+          const ref = (doc.brand as { _ref?: string } | undefined)?._ref;
+          const brand = ref ? await getClient({ apiVersion: '2025-02-19' }).fetch<string | null>('*[_id == $id][0].name', { id: ref }) : null;
+          return [brand, doc.model, doc.colour].filter(Boolean).join(' ');
+        },
         maxLength: 80,
       },
       validation: (r) => r.required(),
     }),
     defineField({
-      name: 'category',
+      name: 'bodyType',
       title: 'Body type',
-      type: 'string',
-      options: { list: ['Sedan', 'SUV', 'Hatchback'], layout: 'radio', direction: 'horizontal' },
+      type: 'reference',
+      to: [{ type: 'bodyType' }],
+      description: 'Pick the body type, or create a new one from this box. Visitors can filter the collection by body type.',
       validation: (r) => r.required(),
     }),
     defineField({
@@ -75,10 +90,10 @@ export const car = defineType({
   ],
   orderings: [
     { title: 'Newest first', name: 'newest', by: [{ field: '_createdAt', direction: 'desc' }] },
-    { title: 'Make', name: 'make', by: [{ field: 'make', direction: 'asc' }, { field: 'model', direction: 'asc' }] },
+    { title: 'Model', name: 'model', by: [{ field: 'model', direction: 'asc' }] },
   ],
   preview: {
-    select: { make: 'make', model: 'model', colour: 'colour', year: 'year', price: 'price', featured: 'featured', media: 'photos.0' },
+    select: { make: 'brand.name', model: 'model', colour: 'colour', year: 'year', price: 'price', featured: 'featured', media: 'photos.0' },
     prepare: ({ make, model, colour, year, price, featured, media }) => ({
       title: [year, make, model].filter(Boolean).join(' '),
       subtitle: [colour, price ? `₹ ${price} L` : 'Price on request', featured ? 'Featured' : null].filter(Boolean).join(' · '),

@@ -2,6 +2,7 @@ import { defineConfig } from 'sanity';
 import { structureTool } from 'sanity/structure';
 import project from './project.json';
 import { car } from './schemaTypes/car';
+import { bodyType, brand } from './schemaTypes/lists';
 
 export default defineConfig({
   name: 'default',
@@ -9,5 +10,5 @@ export default defineConfig({
   projectId: project.projectId,
   dataset: project.dataset,
   plugins: [structureTool()],
-  schema: { types: [car] },
+  schema: { types: [car, brand, bodyType] },
 });

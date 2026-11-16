@@ -7,8 +7,6 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "stock-sizes": "node scripts/stock-sizes.mjs",
-    "sanity-import": "node scripts/sanity-import.mjs",
     "studio": "npm --prefix studio run dev",
     "studio:deploy": "npm --prefix studio run deploy"
   },

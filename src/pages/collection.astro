@@ -1,7 +1,7 @@
 ---
 import Base from '../layouts/Base.astro';
 import CarCard from '../components/CarCard.astro';
-import { CARS, CATEGORIES } from '../data/cars';
+import { CARS, BRANDS, BODY_TYPES } from '../data/cars';
 
 // Sorting by price only makes sense once prices are filled in.
 const priced = CARS.some((c) => c.price !== undefined);
@@ -11,14 +11,19 @@ const priced = CARS.some((c) => c.price !== undefined);
   <section class="page">
     <div class="eyebrow" data-reveal>The collection</div>
     <div class="head">
-      <h1 class="page-title head__title" data-reveal><span id="count">{CARS.length}</span> cars, <span class="it">hand-picked.</span></h1>
+      <h1 class="page-title head__title" data-reveal><span id="count">{CARS.length}</span> <span id="noun">{CARS.length === 1 ? 'car' : 'cars'}</span>, <span class="it">hand-picked.</span></h1>
       {priced && <button type="button" class="sort" id="sort" data-reveal>Sort — <span id="sort-label">Featured</span></button>}
     </div>
-    <div class="filters" role="group" aria-label="Filter by category">
-      {CATEGORIES.map((label, i) => (
-        <button type="button" class="filter" data-filter={label} aria-pressed={i === 0 ? 'true' : 'false'}>{label}</button>
-      ))}
-    </div>
+    <!-- Two filters that combine: a brand and a body type. Both lists come from the cars in Sanity. -->
+    {[['brand', 'Brand', BRANDS], ['body', 'Body type', BODY_TYPES]].map(([key, title, options]) => (
+      <div class="filters" role="group" aria-label={`Filter by ${(title as string).toLowerCase()}`}>
+        <span class="filters__title">{title}</span>
+        {['All', ...(options as string[])].map((label, i) => (
+          <button type="button" class="filter" data-filter={key} data-value={label} aria-pressed={i === 0 ? 'true' : 'false'}>{label}</button>
+        ))}
+      </div>
+    ))}
+    <p class="empty" id="empty" hidden>No cars match both filters right now. <button type="button" class="empty__reset" id="reset">Show all cars</button></p>
     <div class="grid" id="grid">
       {CARS.map((car, i) => <CarCard car={car} index={i} />)}
     </div>
@@ -31,7 +36,12 @@ const priced = CARS.some((c) => c.price !== undefined);
   .sort, .filter { background: none; border: 0; padding: 0; font-size: 11px; font-weight: 500; letter-spacing: .24em; text-transform: uppercase; cursor: pointer; }
   .sort { color: rgba(244, 245, 247,.7); transition: color .4s; }
   .sort:hover { color: var(--ink); }
-  .filters { display: flex; gap: 36px; flex-wrap: wrap; margin-top: 28px; }
+  .filters { display: flex; align-items: baseline; gap: 6px 36px; flex-wrap: wrap; margin-top: 28px; }
+  .filters + .filters { margin-top: 14px; }
+  .filters__title { flex: 0 0 110px; font-size: 10px; font-weight: 500; letter-spacing: .3em; text-transform: uppercase; color: rgba(244, 245, 247,.36); }
+  .empty { margin: 56px 0 0; font-size: 15px; font-weight: 300; color: rgba(244, 245, 247,.62); }
+  .empty[hidden] { display: none; }
+  .empty__reset { background: none; border: 0; padding: 0; margin-left: 8px; font: inherit; color: var(--ink); text-decoration: underline; text-underline-offset: 4px; cursor: pointer; }
   .filter {
     padding: 8px 0; letter-spacing: .26em; color: rgba(244, 245, 247,.5);
     border-bottom: 1px solid transparent; transition: color .4s, border-color .4s;
@@ -41,7 +51,8 @@ const priced = CARS.some((c) => c.price !== undefined);
   .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(320px, 100%), 1fr)); gap: 64px clamp(20px, 2.4vw, 36px); margin-top: 56px; }
   @media (max-width: 600px) {
     .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 36px 12px; margin-top: 32px; }
-    .filters { gap: 22px; }
+    .filters { gap: 4px 22px; }
+    .filters__title { flex-basis: 100%; }
     .head { padding-bottom: 24px; }
   }
 </style>
@@ -53,11 +64,20 @@ const priced = CARS.some((c) => c.price !== undefined);
   const sortBtn = document.getElementById('sort');
   const sortLabel = document.getElementById('sort-label');
   const filters = [...document.querySelectorAll<HTMLButtonElement>('[data-filter]')];
+  const empty = document.getElementById('empty')!;
 
   const SORTS = ['featured', 'low', 'high'] as const;
   const LABELS = { featured: 'Featured', low: 'Price, low to high', high: 'Price, high to low' };
   let sort: (typeof SORTS)[number] = 'featured';
-  let filter = 'All';
+  // The chosen brand and body type; also kept in the address (?brand=BMW&body=SUV) so a filtered list can be shared.
+  const KEYS = ['brand', 'body'] as const;
+  const chosen: Record<(typeof KEYS)[number], string> = { brand: 'All', body: 'All' };
+  const params = new URLSearchParams(location.search);
+  KEYS.forEach((k) => {
+    const wanted = params.get(k)?.toLowerCase();
+    const match = filters.find((f) => f.dataset.filter === k && f.dataset.value!.toLowerCase() === wanted);
+    if (match) chosen[k] = match.dataset.value!;
+  });
 
   function render() {
     const num = (el: HTMLElement, k: string) => Number(el.dataset[k]);
@@ -69,14 +89,16 @@ const priced = CARS.some((c) => c.price !== undefined);
       : num(a, 'order') - num(b, 'order'));
     let shown = 0;
     sorted.forEach((card) => {
-      const visible = filter === 'All' || card.dataset.cat === filter;
+      const visible = (chosen.brand === 'All' || card.dataset.brand === chosen.brand) && (chosen.body === 'All' || card.dataset.cat === chosen.body);
       card.hidden = !visible;
       if (visible) card.style.transitionDelay = `${((shown++ % 3) * 0.12).toFixed(2)}s`;
       grid.appendChild(card);
     });
     count.textContent = String(shown);
+    document.getElementById('noun')!.textContent = shown === 1 ? 'car' : 'cars';
     if (sortLabel) sortLabel.textContent = LABELS[sort];
-    filters.forEach((f) => f.setAttribute('aria-pressed', String(f.dataset.filter === filter)));
+    empty.hidden = shown > 0;
+    filters.forEach((f) => f.setAttribute('aria-pressed', String(chosen[f.dataset.filter as 'brand' | 'body'] === f.dataset.value)));
     window.dispatchEvent(new Event('bms:rescan'));
   }
 
@@ -84,5 +106,14 @@ const priced = CARS.some((c) => c.price !== undefined);
     sort = SORTS[(SORTS.indexOf(sort) + 1) % SORTS.length];
     render();
   });
-  filters.forEach((f) => f.addEventListener('click', () => { filter = f.dataset.filter!; render(); }));
+  const choose = (next: Partial<typeof chosen>) => {
+    Object.assign(chosen, next);
+    const q = new URLSearchParams();
+    KEYS.forEach((k) => { if (chosen[k] !== 'All') q.set(k, chosen[k]); });
+    history.replaceState(null, '', q.size ? `?${q}` : location.pathname);
+    render();
+  };
+  filters.forEach((f) => f.addEventListener('click', () => choose({ [f.dataset.filter!]: f.dataset.value! })));
+  document.getElementById('reset')!.addEventListener('click', () => choose({ brand: 'All', body: 'All' }));
+  if (KEYS.some((k) => chosen[k] !== 'All')) render();
 </script>

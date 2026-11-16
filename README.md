@@ -25,7 +25,11 @@ Forms currently confirm in place only; connect `src/scripts/forms.ts` to a form 
 
 ## Cars (Sanity)
 
-Cars are edited in the Studio at https://bmscarz.sanity.studio: make, model, colour, body type, photos, price and details. The site is static, so a change shows once the site has rebuilt (about a minute after publishing, via the webhook below).
+Cars are edited in the Studio at https://bmscarz.sanity.studio: brand, model, colour, body type, photos, price and details.
+
+Brands and body types are their own lists in the Studio, and each car links to one of each. The collection page filters by both; a brand or body type shows as a filter once a published car uses it, and a filtered list can be linked to, e.g. `/collection/?brand=BMW&body=SUV`.
+
+ The site is static, so a change shows once the site has rebuilt (about a minute after publishing, via the webhook below).
 
 Featured cars are listed first, then the newest; the home page shows the first three. A car needs at least one photo to appear. Unpublish or delete a car to take it off the site.
 
@@ -33,8 +37,6 @@ Featured cars are listed first, then the newest; the home page shows the first t
 
 The Sanity project is `5f3dmod9` (organization "BMS Carz"), and the 21 cars that were on the site have been imported. After changing the car form in `studio/schemaTypes/car.ts`, publish it with `npm run studio:deploy`.
 
-Publishing a car rebuilds the site: a Sanity webhook ("Rebuild website on car publish", sanity.io/manage → API → Webhooks) calls the Vercel deploy hook `sanity-publish` on the `bms-carz` project whenever a car is created, changed or deleted.
-
-The old copies of the stock, `src/data/local-stock.ts`, `public/stock/`, `scripts/stock-sizes.mjs` and `scripts/sanity-import.mjs`, are no longer shown by the site. They can be deleted together with the `fromDisk` fallback in `src/data/cars.ts`, which still imports the first of them.
+Publishing a car rebuilds the site: a Sanity webhook ("Rebuild website on car publish", sanity.io/manage → API → Webhooks) calls the Vercel deploy hook `sanity-publish` on the `bms-carz` project whenever a car, brand or body type is created, changed or deleted.
 
 `npm run studio` runs the Studio locally at http://localhost:3333.

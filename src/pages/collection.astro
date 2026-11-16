@@ -15,7 +15,7 @@ const priced = CARS.some((c) => c.price !== undefined);
       <div class="tools" data-reveal>
         <button type="button" class="tool" id="filter-toggle" aria-expanded="false" aria-controls="filter-panel">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true">
-            <path d="M3 7h11M18 7h3M3 17h3M10 17h11" /><circle cx="16" cy="7" r="2" /><circle cx="8" cy="17" r="2" />
+            <path d="M3 7h18M3 17h18" /><circle class="knob knob--a" cx="16" cy="7" r="2" /><circle class="knob knob--b" cx="8" cy="17" r="2" />
           </svg>
           Filter<span class="tool__n" id="filter-n" hidden></span>
         </button>
@@ -23,7 +23,8 @@ const priced = CARS.some((c) => c.price !== undefined);
       </div>
     </div>
     <!-- Behind the Filter button: a brand and a body type, which combine. Both lists come from the cars in Sanity. -->
-    <div class="panel" id="filter-panel" hidden>
+    <div class="panel" id="filter-panel" inert>
+      <div class="panel__clip"><div class="panel__body">
       {[['brand', 'Brand', BRANDS], ['body', 'Body type', BODY_TYPES]].map(([key, title, options]) => (
         <div class="filters" role="group" aria-label={`Filter by ${(title as string).toLowerCase()}`}>
           <span class="filters__title">{title}</span>
@@ -33,6 +34,7 @@ const priced = CARS.some((c) => c.price !== undefined);
         </div>
       ))}
       <button type="button" class="panel__clear" id="clear" hidden>Clear filters</button>
+      </div></div>
     </div>
     <p class="empty" id="empty" hidden>No cars match both filters right now. <button type="button" class="empty__reset" id="reset">Show all cars</button></p>
     <div class="grid" id="grid">
@@ -48,11 +50,24 @@ const priced = CARS.some((c) => c.price !== undefined);
   .tool, .filter, .panel__clear { background: none; border: 0; padding: 0; font-size: 11px; font-weight: 500; letter-spacing: .24em; text-transform: uppercase; cursor: pointer; }
   .tool { display: inline-flex; align-items: center; gap: 10px; padding: 8px 0; color: rgba(244, 245, 247,.7); transition: color .4s; }
   .tool:hover, .tool[aria-expanded='true'] { color: var(--ink); }
-  .tool__n { display: grid; place-items: center; min-width: 18px; height: 18px; border-radius: 9px; background: var(--accent); color: #fff; font-size: 10px; letter-spacing: 0; }
+  /* The two slider knobs trade places while the panel is open. */
+  .knob { fill: var(--bg); transition: transform .5s var(--ease); }
+  .tool[aria-expanded='true'] .knob--a { transform: translateX(-8px); }
+  .tool[aria-expanded='true'] .knob--b { transform: translateX(8px); }
+  .tool__n { display: grid; place-items: center; min-width: 18px; height: 18px; border-radius: 9px; background: var(--accent); color: #fff; font-size: 10px; letter-spacing: 0; animation: pop .4s var(--ease); }
   .tool__n[hidden] { display: none; }
-  .panel { padding: 8px 0 28px; border-bottom: 1px solid var(--line); }
-  .panel[hidden] { display: none; }
-  .panel__clear { margin-top: 22px; color: rgba(244, 245, 247,.7); text-decoration: underline; text-underline-offset: 5px; transition: color .4s; }
+  @keyframes pop { from { opacity: 0; transform: scale(.4); } }
+  /* The panel opens by growing its one grid row from 0 to its content's height, then its rows fade up in turn. */
+  .panel { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .6s var(--ease); }
+  .panel.is-open { grid-template-rows: 1fr; }
+  .panel__clip { min-height: 0; overflow: hidden; }
+  .panel__body { padding: 8px 0 28px; border-bottom: 1px solid var(--line); }
+  .panel .filters, .panel__clear { opacity: 0; transform: translateY(10px); transition: opacity .3s ease, transform .3s ease, color .4s; }
+  .panel.is-open .filters, .panel.is-open .panel__clear { opacity: 1; transform: none; transition: opacity .6s ease, transform .7s var(--ease), color .4s; }
+  .panel.is-open .filters:nth-child(1) { transition-delay: .1s; }
+  .panel.is-open .filters:nth-child(2) { transition-delay: .18s; }
+  .panel.is-open .panel__clear { transition-delay: .26s; }
+  .panel__clear { margin-top: 22px; color: rgba(244, 245, 247,.7); text-decoration: underline; text-underline-offset: 5px; }
   .panel__clear:hover { color: var(--ink); }
   .panel__clear[hidden] { display: none; }
   .filters { display: flex; align-items: baseline; gap: 6px 36px; flex-wrap: wrap; margin-top: 20px; }
@@ -60,13 +75,22 @@ const priced = CARS.some((c) => c.price !== undefined);
   .filters__title { flex: 0 0 110px; font-size: 10px; font-weight: 500; letter-spacing: .3em; text-transform: uppercase; color: rgba(244, 245, 247,.36); }
   .empty { margin: 56px 0 0; font-size: 15px; font-weight: 300; color: rgba(244, 245, 247,.62); }
   .empty[hidden] { display: none; }
+  .empty { animation: rise .7s var(--ease); }
+  @keyframes rise { from { opacity: 0; transform: translateY(12px); } }
   .empty__reset { background: none; border: 0; padding: 0; margin-left: 8px; font: inherit; color: var(--ink); text-decoration: underline; text-underline-offset: 4px; cursor: pointer; }
-  .filter {
-    padding: 8px 0; letter-spacing: .26em; color: rgba(244, 245, 247,.5);
-    border-bottom: 1px solid transparent; transition: color .4s, border-color .4s;
-  }
+  .filter { position: relative; padding: 8px 0; letter-spacing: .26em; color: rgba(244, 245, 247,.5); transition: color .4s; }
   .filter:hover { color: var(--ink); }
-  .filter[aria-pressed='true'] { color: var(--ink); border-bottom-color: var(--accent); }
+  .filter[aria-pressed='true'] { color: var(--ink); }
+  /* The chosen option's underline draws in from the left, and draws out when another is picked. */
+  .filter::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 1px; background: var(--accent); transform: scaleX(0); transform-origin: right; transition: transform .5s var(--ease); }
+  .filter[aria-pressed='true']::after { transform: scaleX(1); transform-origin: left; }
+  /* Changing a filter or the sort: the grid dips out, is re-ordered while unseen, then its cards rise in one after another. */
+  .grid { transition: opacity .22s ease, transform .22s ease; }
+  .grid.is-swapping { opacity: 0; transform: translateY(8px); }
+  @media (prefers-reduced-motion: reduce) {
+    .panel, .panel .filters, .panel__clear, .filter::after, .knob, .grid { transition: none; }
+    .tool__n, .empty { animation: none; }
+  }
   .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(320px, 100%), 1fr)); gap: 64px clamp(20px, 2.4vw, 36px); margin-top: 56px; }
   @media (max-width: 600px) {
     .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 36px 12px; margin-top: 32px; }
@@ -130,24 +154,47 @@ const priced = CARS.some((c) => c.price !== undefined);
     window.dispatchEvent(new Event('bms:rescan'));
   }
 
+  // A change the visitor made: fade the grid out, apply it, then bring the matching cards in one by one.
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let swap = 0;
+  function update() {
+    if (reduce) return render();
+    grid.classList.add('is-swapping');
+    clearTimeout(swap);
+    swap = window.setTimeout(() => {
+      render();
+      grid.classList.remove('is-swapping');
+      const rise = [{ opacity: 0, transform: 'translateY(22px)' }, { opacity: 1, transform: 'none' }];
+      const timing = { duration: 800, easing: 'cubic-bezier(.22, 1, .36, 1)', fill: 'backwards' } as const;
+      let n = 0;
+      [...grid.children].forEach((card) => {
+        if ((card as HTMLElement).hidden) return;
+        card.classList.add('om-in'); // already on show, so the scroll reveal has nothing left to do
+        card.animate(rise, { ...timing, delay: Math.min(n++, 9) * 60 });
+      });
+      count.animate([{ opacity: 0, transform: 'translateY(.18em)' }, { opacity: 1, transform: 'none' }], { duration: 600, easing: timing.easing });
+    }, 230);
+  }
+
   sortBtn?.addEventListener('click', () => {
     sort = SORTS[(SORTS.indexOf(sort) + 1) % SORTS.length];
-    render();
+    update();
   });
   const choose = (next: Partial<typeof chosen>) => {
     Object.assign(chosen, next);
     const q = new URLSearchParams();
     KEYS.forEach((k) => { if (chosen[k] !== 'All') q.set(k, chosen[k]); });
     history.replaceState(null, '', q.size ? `?${q}` : location.pathname);
-    render();
+    update();
   };
   filters.forEach((f) => f.addEventListener('click', () => choose({ [f.dataset.filter!]: f.dataset.value! })));
   const reset = () => choose({ brand: 'All', body: 'All' });
   document.getElementById('reset')!.addEventListener('click', reset);
   clear.addEventListener('click', reset);
   toggle.addEventListener('click', () => {
-    const open = panel.hidden;
-    panel.hidden = !open;
+    const open = !panel.classList.contains('is-open');
+    panel.classList.toggle('is-open', open);
+    panel.inert = !open; // closed: still in the page for the animation, but not reachable
     toggle.setAttribute('aria-expanded', String(open));
   });
   // Arriving on a filtered link: apply it, and open the panel so the choice is visible.

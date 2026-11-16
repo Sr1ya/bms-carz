@@ -29,7 +29,7 @@ const sizes = {
 >
   <div class="card__media">
     <div class="zoom">
-      <img class="card__img" src={photo(car)} srcset={photoSrcset(car)} sizes={sizes[variant]} alt={carName(car)} loading="lazy" decoding="async" width="1080" height="1350" />
+      <img class="card__img" data-fade src={photo(car)} srcset={photoSrcset(car)} sizes={sizes[variant]} alt={carName(car)} loading="lazy" decoding="async" width="1080" height="1350" />
     </div>
   </div>
   {variant === 'related' ? (

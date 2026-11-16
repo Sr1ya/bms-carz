@@ -166,7 +166,9 @@ const specs: [string, string][] = [
   .thumb[aria-current='true'] { opacity: 1; border-color: var(--ink); }
 
   .lb { width: 100vw; height: 100vh; height: 100dvh; max-width: none; max-height: none; margin: 0; padding: 0; border: 0; background: #000; color: var(--ink); overflow: hidden; }
-  .lb[open] { display: flex; flex-direction: column; }
+  .lb[open] { display: flex; flex-direction: column; animation: lb-in .45s var(--ease); }
+  @keyframes lb-in { from { opacity: 0; transform: scale(.985); } }
+  @media (prefers-reduced-motion: reduce) { .lb[open] { animation: none; } }
   .lb::backdrop { background: #000; }
   .lb__bar { display: flex; justify-content: space-between; align-items: center; padding: 12px var(--gutter); }
   .lb__close { width: 44px; height: 44px; margin-right: -10px; background: none; border: 0; color: var(--ink); font-size: 34px; line-height: 1; cursor: pointer; }

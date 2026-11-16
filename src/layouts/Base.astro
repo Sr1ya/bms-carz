@@ -119,6 +119,40 @@ const fullTitle = title ? `${title} — BMS Carz` : 'BMS Carz — Pre-Owned Luxu
         enter();
       }
 
+      // Photos marked data-fade fade in once they have loaded (see global.css).
+      document.querySelectorAll<HTMLImageElement>('img[data-fade]').forEach((img) => {
+        const done = () => img.classList.add('is-loaded');
+        if (img.complete) done();
+        else { img.addEventListener('load', done, { once: true }); img.addEventListener('error', done, { once: true }); }
+      });
+
+      // Figures (15 yrs, 3,400+, 4.9) count up from zero the first time they scroll into view.
+      if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        const counter = new IntersectionObserver((entries) => entries.forEach((e) => {
+          if (!e.isIntersecting) return;
+          counter.unobserve(e.target);
+          const el = e.target as HTMLElement;
+          const text = el.textContent ?? '';
+          const m = text.match(/[\d,]*\.?\d+/);
+          if (!m) return;
+          const target = parseFloat(m[0].replace(/,/g, ''));
+          const decimals = m[0].split('.')[1]?.length ?? 0;
+          const format = (n: number) => text.replace(m[0], n.toLocaleString('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals, useGrouping: m[0].includes(',') }));
+          // Hold the width the finished figure needs, so its neighbours don't shift while it counts.
+          const box = el.parentElement!;
+          box.style.minWidth = `${box.offsetWidth}px`;
+          const start = performance.now(), duration = 1600;
+          const tick = (now: number) => {
+            const t = Math.min(1, (now - start) / duration);
+            el.textContent = format(target * (1 - Math.pow(1 - t, 4)));
+            if (t < 1) requestAnimationFrame(tick);
+            else { el.textContent = text; box.style.minWidth = ''; }
+          };
+          requestAnimationFrame(tick);
+        }), { threshold: 0.6 });
+        document.querySelectorAll('.stat__n').forEach((n) => counter.observe(n));
+      }
+
       // Let pages that re-order content (collection filters) ask for a re-scan.
       window.addEventListener('bms:rescan', scan);
     </script>

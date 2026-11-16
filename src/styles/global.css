@@ -66,8 +66,13 @@ button { font: inherit; }
 ::view-transition-new(root) { animation: .45s var(--ease) both vt-in; }
 @keyframes vt-out { to { opacity: 0; } }
 @keyframes vt-in { from { opacity: 0; } }
+/* Photos fade in as they arrive instead of popping in (Base.astro marks them .is-loaded). */
+.om-motion img[data-fade] { opacity: 0; transition: opacity .9s ease; }
+.om-motion img[data-fade].is-loaded { opacity: 1; }
 @media (prefers-reduced-motion: reduce) {
   @view-transition { navigation: none; }
+  .om-motion img[data-fade] { opacity: 1; transition: none; }
+  .btn, .link-line::after { transition: none; }
   html { scroll-behavior: auto; }
   .om-motion [data-reveal], .om-motion [data-line], .om-motion [data-hero-media] { opacity: 1; transform: none; transition: none; }
 }
@@ -93,8 +98,9 @@ button { font: inherit; }
 .btn {
   display: inline-block; padding: 18px 36px; border: 1px solid transparent; background: none; color: var(--ink);
   font-size: 11px; font-weight: 500; letter-spacing: .26em; text-transform: uppercase; text-align: center;
-  cursor: pointer; transition: background .4s, color .4s, border-color .4s;
+  cursor: pointer; transition: background .4s, color .4s, border-color .4s, transform .25s var(--ease);
 }
+.btn:active { transform: scale(.98); }
 .btn--solid { background: var(--ink); color: var(--bg); font-weight: 600; }
 .btn--solid:hover { background: var(--accent); color: #fff; }
 .btn--line { border-color: rgba(244, 245, 247, .3); }
@@ -107,7 +113,8 @@ button { font: inherit; }
   text-transform: uppercase; color: rgba(244, 245, 247, .7); transition: color .4s;
 }
 .link-line:hover { color: var(--ink); }
-.link-line::after { content: ''; display: block; width: 36px; height: 1px; background: currentColor; }
+.link-line::after { content: ''; display: block; width: 36px; height: 1px; background: currentColor; transition: width .6s var(--ease); }
+.link-line:hover::after { width: 56px; }
 
 /* Underlined fields */
 .field {

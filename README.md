@@ -19,7 +19,7 @@ npm run preview   # serve the production build
 - `studio/project.json` — the Sanity project id and dataset, shared by the site, the Studio and the import script
 - `src/components/Loader.astro` — intro logo animation, generated from `public/images/bms-carz-logo-dark.svg`
 - `public/video/` — hero film (`hero.webm` for desktop, `hero-720.mp4` for phones/tablets, `hero-1080.mp4` fallback, `hero-poster.jpg`)
-- `public/images/` — logos, plus `bms-about.jpg`
+- `public/images/` — logos
 
 Forms currently confirm in place only; connect `src/scripts/forms.ts` to a form service to receive submissions.
 
@@ -38,5 +38,7 @@ Featured cars are listed first, then the newest; the home page shows the first t
 The Sanity project is `5f3dmod9` (organization "BMS Carz"), and the 21 cars that were on the site have been imported. After changing the car form in `studio/schemaTypes/car.ts`, publish it with `npm run studio:deploy`.
 
 Publishing a car rebuilds the site: a Sanity webhook ("Rebuild website on car publish", sanity.io/manage → API → Webhooks) calls the Vercel deploy hook `sanity-publish` on the `bms-carz` project whenever a car, brand or body type is created, changed or deleted.
+
+The About page's photo is also edited in the Studio ("About page" in the sidebar); set its hotspot to choose what stays in view in the tall frame.
 
 `npm run studio` runs the Studio locally at http://localhost:3333.

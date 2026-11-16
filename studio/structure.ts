@@ -1,6 +1,6 @@
 import type { StructureResolver } from 'sanity/structure';
 
-// The sidebar: every car, the same cars filtered by brand or by body type, then the two lists themselves.
+// The sidebar: every car, the same cars filtered by brand or by body type, the two lists themselves, then the About page.
 const carsBy = (S: Parameters<StructureResolver>[0], type: 'brand' | 'bodyType', title: string) =>
   S.listItem()
     .title(`Cars by ${title.toLowerCase()}`)
@@ -26,4 +26,6 @@ export const structure: StructureResolver = (S) =>
       S.divider(),
       S.documentTypeListItem('brand').title('Brands'),
       S.documentTypeListItem('bodyType').title('Body types'),
+      S.divider(),
+      S.listItem().title('About page').id('about').child(S.document().schemaType('about').documentId('about')),
     ]);
